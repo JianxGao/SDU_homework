@@ -1,0 +1,93 @@
+C51 COMPILER V9.59.0.0   UART                                                              07/01/2020 15:24:24 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN ..\Output\uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\Lib\uart.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Lib;..\inc;..\Pro
+                    -ject) DEBUG OBJECTEXTEND PRINT(..\Output\uart.lst) TABS(2) OBJECT(..\Output\uart.obj)
+
+line level    source
+
+   1          #include "uart.h"
+   2          
+   3          /**************************************
+   4          功能描述：串口初始化(串口1)
+   5          入口参数：无
+   6          返回值：无
+   7          备注：波特率9600bps   晶振11.0592MHz
+   8          ***************************************/
+   9          void UartInit(void)   
+  10          {
+  11   1        PCON &= 0x3f;   //波特率不倍速，串行口工作方式由SM0、SM1决定  
+  12   1        SCON = 0x50;    //8位数据,可变波特率
+  13   1        AUXR |= 0x40;   //定时器1时钟为Fosc,即1T
+  14   1        AUXR &= 0xfe;   //串口1选择定时器1为波特率发生器
+  15   1        TMOD &= 0x0f;   //清除定时器1模式位
+  16   1        TMOD |= 0x20;   //设定定时器1为8位自动重装方式
+  17   1        TL1 = 0xDC;     //设定定时初值
+  18   1        TH1 = 0xDC;     //设定定时器重装值
+  19   1        ET1 = 0;        //禁止定时器1中断
+  20   1        TR1 = 1;        //启动定时器1
+  21   1      }
+  22          
+  23          /**************************************
+  24          功能描述：串口1发送数据
+  25          入口参数：uint8 ch
+  26          返回值：无
+  27          ***************************************/
+  28          void U1SendData(uint8 ch)
+  29          {
+  30   1          SBUF = ch;                  //写数据到UART数据寄存器
+  31   1          while(TI == 0);             //在停止位没有发送时，TI为0即一直等待
+  32   1          TI = 0;                     //清除TI位（该位必须软件清零）
+  33   1      }
+  34          
+  35          /**************************************
+  36          功能描述：串口1发送字符串
+  37          入口参数：uint8 *s
+  38          返回值：无
+  39          ***************************************/
+  40          void U1SendString(uint8 *s)
+  41          {
+  42   1          while (*s)                    //检测字符串结束标志
+  43   1          {
+  44   2              U1SendData(*s++);         //发送当前字符
+  45   2          }
+  46   1      }
+  47          
+  48          
+  49          /***************************************************************************
+  50           * 描  述 : 串口1中断服务函数
+  51           * 入  参 : 无
+  52           * 返回值 : 无
+  53           **************************************************************************/
+  54          void Uart1() interrupt 4 using 1
+C51 COMPILER V9.59.0.0   UART                                                              07/01/2020 15:24:24 PAGE 2   
+
+  55          {
+  56   1        ES = 0;                       // 串口1中断关闭
+  57   1        if (RI)                       //串行接收到停止位的中间时刻时，该位置1
+  58   1        {
+  59   2            RI = 0;                   //清除RI位 （该位必须软件清零）         
+  60   2         }
+  61   1         if (TI)                    //在停止位开始发送时，该位置1
+  62   1         {
+  63   2            TI = 0;                 //清除TI位（该位必须软件清零）
+  64   2         }
+  65   1         ES =  1;                   // 串口1中断打开
+  66   1      }
+  67          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    103    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       3
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

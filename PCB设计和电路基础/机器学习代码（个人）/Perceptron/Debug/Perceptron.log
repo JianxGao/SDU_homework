@@ -1,0 +1,6 @@
+﻿  perceptron.c
+c:\users\jx_g\desktop\python_to_c\c_implement\perceptron\perceptron.c(54): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\perceptron\perceptron.c(108): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\perceptron\perceptron.c(109): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\perceptron\perceptron.c(239): warning C4305: “初始化”: 从“double”到“float”截断
+  Perceptron.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\Perceptron\Debug\Perceptron.exe

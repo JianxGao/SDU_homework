@@ -1,0 +1,12 @@
+﻿  test.c
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(42): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(71): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(93): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(96): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(107): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(108): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(110): warning C4013: “time”未定义；假设外部返回 int
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(124): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(169): warning C4305: “初始化”: 从“double”到“float”截断
+c:\users\jx_g\desktop\python_to_c\c_implement\simple_linear_regression\test.c(170): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  simple_linear_regression.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\simple_linear_regression\Debug\simple_linear_regression.exe

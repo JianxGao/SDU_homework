@@ -1,0 +1,511 @@
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ____
+OBJECT MODULE PLACED IN .\Objects\代码.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE 代码.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\代码
+                    -.lst) TABS(2) OBJECT(.\Objects\代码.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #define uchar unsigned char
+   4          #define uint  unsigned int
+   5          unsigned long S=0;
+   6          unsigned int  time=0;
+   7          bit  flag1=1;
+   8          char final_distance;
+   9          char h1;
+  10          char begin = 2;
+  11          char red_to_cs = 5;
+  12          char whole_height=16;
+  13          char num; //用于存储多少个小灯在亮
+  14          uchar dis_time_buf[16]={0};
+  15          uchar distance[3]={0};
+  16          
+  17          
+  18          //控制红外板
+  19          sbit infrared_system=P1^6;
+  20          
+  21          //抽水机
+  22          sbit water=P1^5;
+  23          
+  24          //超声波
+  25          sbit Echo=P1^4; //接收端
+  26          sbit Trig=P1^3; //控制端
+  27          
+  28          //LCD1602引脚定义
+  29          //采用8位并行方式,DB0~DB7连接至LCDDATA0~LCDDATA7
+  30          sbit RS=P1^0;
+  31          sbit RW=P1^1;
+  32          sbit CS=P1^2;
+  33          #define LCDDATA P0
+  34          
+  35          //DS1302引脚定义
+  36          sbit RST=P3^1;
+  37          sbit IO=P3^2;
+  38          sbit SCK=P3^3;
+  39          
+  40          //DS1302地址定义
+  41          #define ds1302_sec_add        0x80    //秒数据地址
+  42          #define ds1302_min_add        0x82    //分数据地址
+  43          #define ds1302_hr_add         0x84    //时数据地址
+  44          #define ds1302_date_add       0x86    //日数据地址
+  45          #define ds1302_month_add      0x88    //月数据地址
+  46          #define ds1302_day_add        0x8a    //星期数据地址
+  47          #define ds1302_year_add       0x8c    //年数据地址
+  48          #define ds1302_control_add    0x8e    //控制数据地址
+  49          #define ds1302_charger_add    0x90           
+  50          #define ds1302_clkburst_add   0xbe
+  51          
+  52          //ds1302初始时间定义
+  53          uchar time_buf[8] = {0x20,0x19,0x10,0x15,0x0,0x58,0x00,0x02};//初始时间2010年6月1号23点59分55秒 星期二
+  54          
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 2   
+
+  55          /********************************************************************************/
+  56          /********************************************************************************/
+  57          /**************************延时函数**********************************************/
+  58          /********************************************************************************/
+  59          /********************************************************************************/
+  60          //延时1ms
+  61          //当晶振为12M时，j<112；当晶振为11.0592M时，j<122
+  62          void Delay_xms(uint x)
+  63          {
+  64   1        uint i,j;
+  65   1        for(i=0;i<x;i++)
+  66   1        for(j=0;j<122;j++);
+  67   1      }
+  68          
+  69          //12us延时
+  70          //STC89C52为1T单片机,即1个时钟/机器周期,速度为AT89C52的12倍
+  71          void Delay_xus(uint t)            
+  72          { 
+  73   1          for(;t>0;t--)
+  74   1          {
+  75   2              _nop_();
+  76   2          }
+  77   1      }
+  78          
+  79          /********************************************************************************/
+  80          /********************************************************************************/
+  81          /********************************************************************************/
+  82          /**************************超声波程序********************************************/
+  83          /********************************************************************************/
+  84          /********************************************************************************/
+  85          //测算距离
+  86          void Conut(void)
+  87          {
+  88   1          time=TH0*256+TL0;
+  89   1          TH0=0;
+  90   1          TL0=0;
+  91   1          S=(time*1.87)/100;                 //算出来是CM
+  92   1          distance[0]=((S/100+0x30)&0x0f);   //送数据百位
+  93   1          distance[1]=((S%100/10+0x30)&0x0f);//送数据十位
+  94   1          distance[2]=((S%100%10+0x30)&0x0f);//送数据个位
+  95   1      }
+  96          //800ms启动超声波模块
+  97          void  StartModule()          
+  98          {
+  99   1          Trig=1;                     //800ms  启动一次模块
+ 100   1          _nop_(); 
+ 101   1          _nop_(); 
+ 102   1          _nop_(); 
+ 103   1          _nop_(); 
+ 104   1          _nop_(); 
+ 105   1          _nop_(); 
+ 106   1          _nop_(); 
+ 107   1          _nop_(); 
+ 108   1          _nop_(); 
+ 109   1          _nop_(); 
+ 110   1          _nop_(); 
+ 111   1          _nop_(); 
+ 112   1          _nop_(); 
+ 113   1          _nop_(); 
+ 114   1          _nop_(); 
+ 115   1          _nop_(); 
+ 116   1          _nop_();
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 3   
+
+ 117   1          _nop_(); 
+ 118   1          _nop_(); 
+ 119   1          _nop_(); 
+ 120   1          _nop_();
+ 121   1          Trig=0;
+ 122   1      }
+ 123          //超声波主程序
+ 124          void Ultrasonic_run(void)     //启动超声波
+ 125          {
+ 126   1          
+ 127   1          StartModule();            //超声波
+ 128   1          while(!Echo);             //当RX为零时等待
+ 129   1          TR0=1;                    //开启计数
+ 130   1          while(Echo);              //当RX为1计数并等待
+ 131   1          TR0=0;                    //关闭计数
+ 132   1          Conut();                  //计算
+ 133   1          Delay_xms(80);            //80MS
+ 134   1      }
+ 135          /********************************************************************************/
+ 136          /********************************************************************************/
+ 137          /**************************LCD程序***********************************************/
+ 138          /********************************************************************************/
+ 139          /********************************************************************************/
+ 140          //控制LCD写时序
+ 141          void LCD_en_write(void)       
+ 142          {
+ 143   1          CS=1;    
+ 144   1          Delay_xus(20);
+ 145   1          CS=0;   
+ 146   1          Delay_xus(20);
+ 147   1      }
+ 148           
+ 149          //写指令函数
+ 150          void Write_Instruction(uchar command)
+ 151          {
+ 152   1          RS=0;
+ 153   1          RW=0;
+ 154   1          CS=1;
+ 155   1          LCDDATA=command;
+ 156   1          LCD_en_write();//写入指令数据
+ 157   1      }
+ 158          //写数据函数
+ 159          void Write_Data(uchar Wdata)
+ 160          {
+ 161   1          RS=1;
+ 162   1          RW=0;
+ 163   1          CS=1;
+ 164   1          LCDDATA=Wdata;
+ 165   1          LCD_en_write();//写入数据
+ 166   1      }
+ 167          //字符显示初始地址设置
+ 168          void LCD_SET_XY(uchar X,uchar Y)
+ 169          {
+ 170   1          uchar address;
+ 171   1          if(Y==0)
+ 172   1            address=0x80+X;          //Y=0,表示在第一行显示，地址基数为0x80
+ 173   1          else 
+ 174   1            address=0xc0+X;          //Y非0时，表时在第二行显示，地址基数为0xC0
+ 175   1          Write_Instruction(address);//写指令，设置显示初始地址
+ 176   1      }
+ 177          //在第X行Y列开始显示Wdata所对应的单个字符
+ 178          void LCD_write_char(uchar X,uchar Y,uchar Wdata)
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 4   
+
+ 179          {
+ 180   1          LCD_SET_XY(X,Y);//写地址
+ 181   1          Write_Data(Wdata);//写入当前字符并显示
+ 182   1      }
+ 183          //清屏函数
+ 184          void LCD_clear(void)
+ 185          {
+ 186   1          Write_Instruction(0x01);
+ 187   1          Delay_xms(5);
+ 188   1      }
+ 189          //显示屏初始化函数
+ 190          void LCD_init(void) 
+ 191          { 
+ 192   1          Write_Instruction(0x38);        //8bit interface,2line,5*7dots
+ 193   1          Delay_xms(5);
+ 194   1          Write_Instruction(0x38);  
+ 195   1          Delay_xms(5);
+ 196   1          Write_Instruction(0x38);  
+ 197   1          Write_Instruction(0x08);        //关显示，不显光标，光标不闪烁
+ 198   1          Write_Instruction(0x01);        //清屏
+ 199   1          Delay_xms(5); 
+ 200   1          Write_Instruction(0x04);        //写一字符，整屏显示不移动
+ 201   1          Delay_xms(5); 
+ 202   1          Write_Instruction(0x0C);        //开显示，光标、闪烁都关闭
+ 203   1      }
+ 204          
+ 205          /********************************************************************************/
+ 206          /********************************************************************************/
+ 207          /************************DS1302程序**********************************************/
+ 208          /********************************************************************************/
+ 209          /********************************************************************************/
+ 210          //DS1302初始化函数
+ 211          void ds1302_init(void) 
+ 212          {
+ 213   1          RST=0;      //RST脚置低
+ 214   1          SCK=0;      //SCK脚置低
+ 215   1      }
+ 216          //向DS1302写入一字节数据
+ 217          void ds1302_write_byte(uchar addr, uchar d) 
+ 218          {
+ 219   1          uchar i;
+ 220   1          RST=1;          //启动DS1302总线  
+ 221   1          //写入目标地址：addr
+ 222   1          addr = addr & 0xFE;   //最低位置零，寄存器0位为0时写，为1时读
+ 223   1          for (i = 0; i < 8; i ++) 
+ 224   1          {
+ 225   2              if (addr & 0x01) 
+ 226   2              {
+ 227   3                  IO=1;
+ 228   3              }
+ 229   2              else 
+ 230   2              {
+ 231   3                  IO=0;
+ 232   3              }
+ 233   2              SCK=1;      //产生时钟
+ 234   2              SCK=0;
+ 235   2              addr = addr >> 1;
+ 236   2          } 
+ 237   1          //写入数据：d
+ 238   1          for (i = 0; i < 8; i ++) 
+ 239   1          {
+ 240   2              if (d & 0x01) 
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 5   
+
+ 241   2              {
+ 242   3                  IO=1;
+ 243   3              }
+ 244   2              else 
+ 245   2              {
+ 246   3                  IO=0;
+ 247   3              }
+ 248   2              SCK=1;    //产生时钟
+ 249   2              SCK=0;
+ 250   2              d = d >> 1;
+ 251   2          }
+ 252   1          RST=0;    //停止DS1302总线
+ 253   1      }
+ 254          
+ 255          //从DS1302读出一字节数据
+ 256          uchar ds1302_read_byte(uchar addr) 
+ 257          {
+ 258   1          uchar i,temp; 
+ 259   1          RST=1;          //启动DS1302总线
+ 260   1          //写入目标地址：addr
+ 261   1          addr = addr | 0x01;    //最低位置高，寄存器0位为0时写，为1时读
+ 262   1          for (i = 0; i < 8; i ++) 
+ 263   1          {
+ 264   2              if (addr & 0x01) 
+ 265   2              {
+ 266   3                  IO=1;
+ 267   3              }
+ 268   2              else 
+ 269   2              {
+ 270   3                  IO=0;
+ 271   3              }
+ 272   2              SCK=1;
+ 273   2              SCK=0;
+ 274   2              addr = addr >> 1;
+ 275   2          } 
+ 276   1          //输出数据：temp
+ 277   1          for (i = 0; i < 8; i ++) 
+ 278   1          {
+ 279   2              temp = temp >> 1;
+ 280   2              if (IO) 
+ 281   2              {
+ 282   3                  temp |= 0x80;
+ 283   3              }
+ 284   2              else 
+ 285   2              {
+ 286   3                  temp &= 0x7F;
+ 287   3              }
+ 288   2              SCK=1;
+ 289   2              SCK=0;
+ 290   2          } 
+ 291   1          RST=0;          //停止DS1302总线
+ 292   1          return temp;
+ 293   1      }
+ 294          //向DS1302写入时钟数据
+ 295          void ds1302_write_time(void) 
+ 296          {
+ 297   1          ds1302_write_byte(ds1302_control_add,0x00);         //关闭写保护 
+ 298   1          ds1302_write_byte(ds1302_sec_add,0x80);             //暂停时钟 
+ 299   1          //ds1302_write_byte(ds1302_charger_add,0xa9);       //涓流充电 
+ 300   1          ds1302_write_byte(ds1302_year_add,time_buf[1]);     //年 
+ 301   1          ds1302_write_byte(ds1302_month_add,time_buf[2]);    //月 
+ 302   1          ds1302_write_byte(ds1302_date_add,time_buf[3]);     //日 
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 6   
+
+ 303   1          ds1302_write_byte(ds1302_hr_add,time_buf[4]);       //时 
+ 304   1          ds1302_write_byte(ds1302_min_add,time_buf[5]);      //分
+ 305   1          ds1302_write_byte(ds1302_sec_add,time_buf[6]);      //秒
+ 306   1          ds1302_write_byte(ds1302_day_add,time_buf[7]);      //周 
+ 307   1          ds1302_write_byte(ds1302_control_add,0x80);         //打开写保护     
+ 308   1      }
+ 309          //从DS1302读出时钟数据
+ 310          void ds1302_read_time(void)  
+ 311          {
+ 312   1          time_buf[1]=ds1302_read_byte(ds1302_year_add);      //年 
+ 313   1          time_buf[2]=ds1302_read_byte(ds1302_month_add);     //月 
+ 314   1          time_buf[3]=ds1302_read_byte(ds1302_date_add);      //日 
+ 315   1          time_buf[4]=ds1302_read_byte(ds1302_hr_add);        //时 
+ 316   1          time_buf[5]=ds1302_read_byte(ds1302_min_add);       //分 
+ 317   1          time_buf[6]=(ds1302_read_byte(ds1302_sec_add))&0x7f;//秒，屏蔽秒的第7位，避免超出59
+ 318   1          time_buf[7]=ds1302_read_byte(ds1302_day_add);       //周  
+ 319   1      }
+ 320          /********************************************************************************/
+ 321          /********************************************************************************/
+ 322          /************************显示在LCD屏幕*******************************************/
+ 323          /********************************************************************************/
+ 324          /********************************************************************************/
+ 325          void Display_DS1302(void)
+ 326          { 
+ 327   1          LCD_write_char(2,0,dis_time_buf[0]+'0');   
+ 328   1          LCD_write_char(3,0,dis_time_buf[1]+'0');   
+ 329   1          LCD_write_char(4,0,dis_time_buf[2]+'0');  
+ 330   1          LCD_write_char(5,0,dis_time_buf[3]+'0');
+ 331   1          LCD_write_char(6,0,'/');  
+ 332   1          LCD_write_char(7,0,dis_time_buf[4]+'0');  
+ 333   1          LCD_write_char(8,0,dis_time_buf[5]+'0');
+ 334   1          LCD_write_char(9,0,'/');
+ 335   1          LCD_write_char(10,0,dis_time_buf[6]+'0');  
+ 336   1          LCD_write_char(11,0,dis_time_buf[7]+'0');      
+ 337   1          LCD_write_char(14,0,dis_time_buf[14]+'0');
+ 338   1          //第2行显示     
+ 339   1          LCD_write_char(4,1,dis_time_buf[8]+'0');  
+ 340   1          LCD_write_char(5,1,dis_time_buf[9]+'0');
+ 341   1          LCD_write_char(6,1,':'); 
+ 342   1          LCD_write_char(7,1,dis_time_buf[10]+'0');   
+ 343   1          LCD_write_char(8,1,dis_time_buf[11]+'0');
+ 344   1          LCD_write_char(9,1,':');  
+ 345   1          LCD_write_char(10,1,dis_time_buf[12]+'0');  
+ 346   1          LCD_write_char(11,1,dis_time_buf[13]+'0');
+ 347   1          
+ 348   1      }
+ 349          //void Display_Ultrasonic(void)
+ 350          /*{
+ 351              LCD_write_char(11,1,distance[0]+'0');
+ 352              LCD_write_char(12,1,distance[1]+'0');
+ 353              LCD_write_char(13,1,distance[2]+'0');
+ 354              LCD_write_char(14,1,'c');
+ 355              LCD_write_char(15,1,num+'0');
+ 356          }
+ 357          /********************************************************************************/
+ 358          /********************************************************************************/
+ 359          /*************************计算部分***********************************************/
+ 360          /********************************************************************************/
+ 361          /********************************************************************************/
+ 362          //读出有几个小灯发亮
+ 363          char count_the_number_of_zero()
+ 364          { 
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 7   
+
+ 365   1          int i;
+ 366   1          char n=0;
+ 367   1          uchar a;
+ 368   1          a=P2;
+ 369   1          for (i = 0; i < 8; i ++)
+ 370   1          {if (a & 0x01){;}
+ 371   2           else{n+=1;}
+ 372   2           a = a >> 1;}
+ 373   1          return n;
+ 374   1      }
+ 375          /********************************************************************************/
+ 376          /********************************************************************************/
+ 377          /*************************中断程序***********************************************/
+ 378          /********************************************************************************/
+ 379          /********************************************************************************/
+ 380          
+ 381          
+ 382          void zd0() interrupt 1          //T0中断用来计数器溢出,超过测距范围
+ 383          {
+ 384   1          flag1=1;                     //中断溢出标志
+ 385   1      }
+ 386          //定时器中断函数
+ 387          void Timer2() interrupt 5   //定时器2是5号中断
+ 388          {
+ 389   1          static uchar t;
+ 390   1          TF2=0;
+ 391   1          t++;
+ 392   1          if(t==4)               //间隔200ms(50ms*4)读取一次时间
+ 393   1          {
+ 394   2              t=0;
+ 395   2              ds1302_read_time();  //读取时间 
+ 396   2              dis_time_buf[0]=(time_buf[0]>>4); //年   
+ 397   2              dis_time_buf[1]=(time_buf[0]&0x0f);
+ 398   2              dis_time_buf[2]=(time_buf[1]>>4);   
+ 399   2              dis_time_buf[3]=(time_buf[1]&0x0f); 
+ 400   2              dis_time_buf[4]=(time_buf[2]>>4); //月  
+ 401   2              dis_time_buf[5]=(time_buf[2]&0x0f);  
+ 402   2              dis_time_buf[6]=(time_buf[3]>>4); //日   
+ 403   2              dis_time_buf[7]=(time_buf[3]&0x0f);
+ 404   2              dis_time_buf[14]=(time_buf[7]&0x07); //星期 
+ 405   2              //第2行显示  
+ 406   2              dis_time_buf[8]=(time_buf[4]>>4); //时   
+ 407   2              dis_time_buf[9]=(time_buf[4]&0x0f);   
+ 408   2              dis_time_buf[10]=(time_buf[5]>>4); //分   
+ 409   2              dis_time_buf[11]=(time_buf[5]&0x0f);   
+ 410   2              dis_time_buf[12]=(time_buf[6]>>4); //秒   
+ 411   2              dis_time_buf[13]=(time_buf[6]&0x0f);
+ 412   2              num = count_the_number_of_zero();
+ 413   2          }
+ 414   1      }
+ 415          //初始化定时器及中断
+ 416          void Init_t0t2(void)
+ 417          {
+ 418   1          //定时器2初始化
+ 419   1          RCAP2H=0x3c;        //赋T2初始值0x3cb0，溢出20次为1秒,每次溢出时间为50ms
+ 420   1          RCAP2L=0xb0;
+ 421   1          TR2=1;              //启动定时器2
+ 422   1          ET2=1;              //打开定时器2中断
+ 423   1          //中断1                   
+ 424   1          TMOD|=0x01;         
+ 425   1          TH0=0;
+ 426   1          TL0=0;          
+C51 COMPILER V9.59.0.0   ____                                                              10/15/2019 20:29:34 PAGE 8   
+
+ 427   1          ET0=1;              //允许T0中断
+ 428   1          EA=1;               //打开总中断
+ 429   1      }
+ 430                  
+ 431          //主函数
+ 432          void main(void)
+ 433          {
+ 434   1          Delay_xms(50);//等待系统稳定
+ 435   1          LCD_init();   //LCD初始化
+ 436   1          LCD_clear();  //清屏   
+ 437   1          ds1302_init();  //DS1302初始化
+ 438   1          Delay_xms(10);
+ 439   1          //ds1302_write_time(); //写入初始值
+ 440   1          Init_t0t2();
+ 441   1      
+ 442   1          while(1)
+ 443   1          {
+ 444   2              Display_DS1302();         //DS1302显示在lcd屏幕上
+ 445   2              Ultrasonic_run();         //打开超神波
+ 446   2              infrared_system=0;        //打开红外系统
+ 447   2              final_distance= whole_height+red_to_cs-(distance[0]*100+distance[1]*10+distance[2]);    //计算最终用于比
+             -较的值    
+ 448   2              h1=num*2-final_distance;
+ 449   2              if(num!=0)                //判断是否有水杯
+ 450   2              {
+ 451   3                  
+ 452   3                  
+ 453   3          
+ 454   3                  if(h1>begin)          //判断距离
+ 455   3                  {
+ 456   4                      water=0;              //打开水泵
+ 457   4                  }
+ 458   3                  else if(h1<begin)
+ 459   3                  {
+ 460   4                      water=1;              //保证水泵关闭
+ 461   4                  }
+ 462   3                  else
+ 463   3                  {
+ 464   4                      water=1;              //保证水泵关闭
+ 465   4                  }
+ 466   3              }
+ 467   2              else
+ 468   2              {
+ 469   3                  water=1;
+ 470   3              }
+ 471   2          }
+ 472   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1162    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     40    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

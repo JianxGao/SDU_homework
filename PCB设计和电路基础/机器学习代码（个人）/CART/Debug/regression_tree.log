@@ -1,0 +1,10 @@
+﻿  regreesion_tree.c
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(5): warning C4005: “NULL”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\enterprise\vc\tools\msvc\14.16.27023\include\vcruntime.h(222): note: 参见“NULL”的前一个定义
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(75): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(162): warning C4101: “temp_class”: 未引用的局部变量
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(245): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(271): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(224): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\regression_tree\regreesion_tree.c(225): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  regression_tree.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\regression_tree\Debug\regression_tree.exe

@@ -1,0 +1,14 @@
+﻿  naive_bayes.c
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(59): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(127): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(130): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(153): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(154): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(167): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(188): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(222): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(223): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(309): warning C4047: “函数”:“statistics *”与“statistics (*)[3]”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(309): warning C4024: “calculate_class_probability”: 形参和实参 3 的类型不同
+c:\users\jx_g\desktop\python_to_c\c_implement\naive_bayes\naive_bayes.c(321): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+  Naive_Bayes.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\Naive_Bayes\Debug\Naive_Bayes.exe

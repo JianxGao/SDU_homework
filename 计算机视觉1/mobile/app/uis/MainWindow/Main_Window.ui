@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>791</width>
+    <height>723</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Image Processor</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="documentMode">
+   <bool>true</bool>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_7">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>5</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="title">
+        <string>扫描结果</string>
+       </property>
+       <layout class="QVBoxLayout" name="initial_img">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>791</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+     <pointsize>10</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>true</bool>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="action_load_img"/>
+    <addaction name="action_save_img"/>
+   </widget>
+   <widget class="QMenu" name="menu_edit">
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="action_undo"/>
+    <addaction name="action_redo"/>
+    <addaction name="action_original_img"/>
+    <addaction name="action_clear_img"/>
+    <addaction name="action_close_img"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>操作</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_edit"/>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>工具栏</string>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonIconOnly</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_load_img"/>
+   <addaction name="action_save_img"/>
+   <addaction name="action_close_img"/>
+   <addaction name="separator"/>
+   <addaction name="action_undo"/>
+   <addaction name="action_redo"/>
+   <addaction name="separator"/>
+   <addaction name="action_original_img"/>
+   <addaction name="action_clear_img"/>
+  </widget>
+  <widget class="QToolBar" name="Method_bar">
+   <property name="font">
+    <font>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="windowTitle">
+    <string>基础模式</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllToolBarAreas</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>120</width>
+     <height>120</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>BottomToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="original"/>
+   <addaction name="brighter"/>
+   <addaction name="dimmer"/>
+   <addaction name="graystyle"/>
+   <addaction name="binary"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>89</width>
+     <height>120</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="windowTitle">
+    <string>算法工具箱</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QSplitter" name="splitter_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QFrame" name="frame_2">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="treeWidget_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);
+selection-background-color: rgb(236, 236, 236);
+alternate-background-color: rgb(232, 232, 232);</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+           </property>
+           <property name="midLineWidth">
+            <number>0</number>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+           </property>
+           <property name="dragEnabled">
+            <bool>false</bool>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="textElideMode">
+            <enum>Qt::ElideLeft</enum>
+           </property>
+           <property name="autoExpandDelay">
+            <number>-1</number>
+           </property>
+           <property name="indentation">
+            <number>20</number>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
+           <property name="uniformRowHeights">
+            <bool>false</bool>
+           </property>
+           <property name="itemsExpandable">
+            <bool>true</bool>
+           </property>
+           <property name="sortingEnabled">
+            <bool>false</bool>
+           </property>
+           <property name="animated">
+            <bool>false</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>true</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <property name="columnCount">
+            <number>1</number>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerCascadingSectionResizes">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerMinimumSectionSize">
+            <number>29</number>
+           </attribute>
+           <attribute name="headerHighlightSections">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerShowSortIndicator" stdset="0">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>工具栏</string>
+            </property>
+           </column>
+           <item>
+            <property name="text">
+             <string>基础操作</string>
+            </property>
+            <property name="font">
+             <font>
+              <family>Microsoft YaHei</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>原图</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>增亮</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>暗化</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>灰度图</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>黑白图</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+            </item>
+           </item>
+           <item>
+            <property name="text">
+             <string>直方图工具箱</string>
+            </property>
+            <property name="font">
+             <font>
+              <family>Microsoft YaHei</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="textAlignment">
+             <set>AlignLeading|AlignVCenter</set>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="foreground">
+             <brush brushstyle="NoBrush">
+              <color alpha="255">
+               <red>0</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>SSR</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>直方图均衡化</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Clahe</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Clahe(YUV)</string>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="statusTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>drag</string>
+             </property>
+            </item>
+           </item>
+           <item>
+            <property name="text">
+             <string>核卷积工具箱</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>模糊</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>平滑</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>模板增强锐化</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>USM算法增强锐化</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>边缘增强</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>边缘增强超级版</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>轮廓获取</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>边缘检测</string>
+             </property>
+            </item>
+           </item>
+           <item>
+            <property name="text">
+             <string>二值化工具箱</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>Otsu</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>移动平均</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>自适应阈值处理</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Sauvola最强二值化算法</string>
+             </property>
+            </item>
+           </item>
+           <item>
+            <property name="text">
+             <string>形态学工具箱</string>
+            </property>
+            <property name="font">
+             <font>
+              <family>Microsoft YaHei</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>腐蚀</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>膨胀</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>开运算</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>闭运算</string>
+             </property>
+            </item>
+           </item>
+           <item>
+            <property name="text">
+             <string>炫酷滤镜箱</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="background">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>241</red>
+               <green>241</green>
+               <blue>241</blue>
+              </color>
+             </brush>
+            </property>
+            <property name="icon">
+             <iconset>
+              <selectedoff>../../material/arrow-right.png</selectedoff>
+              <selectedon>../../material/arrow-down.png</selectedon>
+             </iconset>
+            </property>
+            <item>
+             <property name="text">
+              <string>复古特效</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>流年特效</string>
+             </property>
+            </item>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="windowTitle">
+    <string>专业模式</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="spacing">
+      <number>10</number>
+     </property>
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="change_mode">
+         <property name="toolTip">
+          <string>进入该模式后，你可以任意叠加处理方法</string>
+         </property>
+         <property name="text">
+          <string>开启/关闭</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="version_control">
+         <property name="text">
+          <string>撤销操作</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>恢复原图</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="text_method"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="action_load_img">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/file-open.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>读取图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="action_save_img">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/save.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>保存图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_clear_img">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/ashbin.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>清除图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Del</string>
+   </property>
+  </action>
+  <action name="action_original_img">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/refresh.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>还原图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_undo">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/direction-left.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>撤销上步</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="action_redo">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/direction-right.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>恢复上步</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="action_close_img">
+   <property name="icon">
+    <iconset>
+     <normalon>../../material/close.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>关闭图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Del</string>
+   </property>
+  </action>
+  <action name="original">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>原图</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>true</bool>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+   <property name="priority">
+    <enum>QAction::NormalPriority</enum>
+   </property>
+  </action>
+  <action name="brighter">
+   <property name="text">
+    <string>增亮</string>
+   </property>
+   <property name="toolTip">
+    <string>增亮</string>
+   </property>
+  </action>
+  <action name="dimmer">
+   <property name="text">
+    <string>暗化</string>
+   </property>
+   <property name="toolTip">
+    <string>暗化</string>
+   </property>
+  </action>
+  <action name="graystyle">
+   <property name="text">
+    <string>灰度</string>
+   </property>
+   <property name="toolTip">
+    <string>灰度</string>
+   </property>
+  </action>
+  <action name="binary">
+   <property name="text">
+    <string>黑白</string>
+   </property>
+   <property name="toolTip">
+    <string>黑白</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>load_img()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,147 @@
+C51 COMPILER V9.59.0.0   STAT                                                              05/26/2020 00:10:52 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE STAT
+OBJECT MODULE PLACED IN ..\Output\stat.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE stat.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Lib;..\inc;..\Project) DEBUG O
+                    -BJECTEXTEND PRINT(..\Output\stat.lst) TABS(2) OBJECT(..\Output\stat.obj)
+
+line level    source
+
+   1          #include  "math.h"
+   2          float get_mean(float squence[], int len)
+   3          {
+   4   1        uint8 xdata i;
+*** ERROR C202 IN LINE 4 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 4 OF stat.c: syntax error near 'xdata', expected ';'
+   5   1        float xdata output = 0;
+*** ERROR C141 IN LINE 5 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 5 OF stat.c: 'output': undefined identifier
+   6   1        for(i=0;i<len;i++)
+*** ERROR C202 IN LINE 6 OF stat.c: 'i': undefined identifier
+   7   1        {
+   8   2          output+=squence[i];
+*** ERROR C202 IN LINE 8 OF stat.c: 'output': undefined identifier
+   9   2        }
+  10   1        return output/len;
+*** ERROR C202 IN LINE 10 OF stat.c: 'output': undefined identifier
+  11   1      }
+  12          float get_std(float squence[],int len)
+  13          {
+  14   1          float xdata mean = get_mean(squence,len);
+  15   1          float xdata output = 0;
+  16   1          uint8 xdata i;
+*** ERROR C202 IN LINE 16 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 16 OF stat.c: syntax error near 'xdata', expected ';'
+  17   1          for (i = 0; i < len; i++) 
+*** ERROR C202 IN LINE 17 OF stat.c: 'i': undefined identifier
+  18   1          {
+  19   2            output += pow((squence[i] - mean), 2);
+*** ERROR C202 IN LINE 19 OF stat.c: 'i': undefined identifier
+  20   2          }
+  21   1          output = (output / len);
+  22   1          return pow(output, 0.5);
+  23   1      }
+  24          float get_min(float squence[],int len)
+  25          { 
+  26   1        uint8 xdata i;
+*** ERROR C202 IN LINE 26 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 26 OF stat.c: syntax error near 'xdata', expected ';'
+  27   1        float xdata output = squence[0];
+*** ERROR C141 IN LINE 27 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 27 OF stat.c: 'output': undefined identifier
+  28   1        for (i=0;i<len;i++)
+*** ERROR C202 IN LINE 28 OF stat.c: 'i': undefined identifier
+  29   1        {
+  30   2          if(squence[i]<output)
+*** ERROR C202 IN LINE 30 OF stat.c: 'i': undefined identifier
+  31   2          {
+  32   3            output = squence[i];
+*** ERROR C202 IN LINE 32 OF stat.c: 'output': undefined identifier
+  33   3          }
+  34   2        }
+  35   1        return output;
+*** ERROR C202 IN LINE 35 OF stat.c: 'output': undefined identifier
+C51 COMPILER V9.59.0.0   STAT                                                              05/26/2020 00:10:52 PAGE 2   
+
+  36   1      }
+  37          float get_max(float squence[],int len)
+  38          { 
+  39   1        uint8 xdata i;
+*** ERROR C202 IN LINE 39 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 39 OF stat.c: syntax error near 'xdata', expected ';'
+  40   1        float xdata output = squence[0];
+*** ERROR C141 IN LINE 40 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 40 OF stat.c: 'output': undefined identifier
+  41   1        for (i=0;i<len;i++)
+*** ERROR C202 IN LINE 41 OF stat.c: 'i': undefined identifier
+  42   1        {
+  43   2          if(squence[i]>output)
+*** ERROR C202 IN LINE 43 OF stat.c: 'i': undefined identifier
+  44   2          {
+  45   3            output = squence[i];
+*** ERROR C202 IN LINE 45 OF stat.c: 'output': undefined identifier
+  46   3          }
+  47   2        }
+  48   1        return output;
+*** ERROR C202 IN LINE 48 OF stat.c: 'output': undefined identifier
+  49   1      }
+  50          float get_energy(float squence[],int len) 
+  51          {
+  52   1        uint8 xdata i;
+*** ERROR C202 IN LINE 52 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 52 OF stat.c: syntax error near 'xdata', expected ';'
+  53   1        float xdata output = 0;
+*** ERROR C141 IN LINE 53 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 53 OF stat.c: 'output': undefined identifier
+  54   1        for (i = 0; i < len; i++) 
+*** ERROR C202 IN LINE 54 OF stat.c: 'i': undefined identifier
+  55   1        {
+  56   2          output += pow(squence[i], 2);
+*** ERROR C202 IN LINE 56 OF stat.c: 'output': undefined identifier
+  57   2        }
+  58   1        return output / len;
+*** ERROR C202 IN LINE 58 OF stat.c: 'output': undefined identifier
+  59   1      }
+  60          float get_corrcoef(float data1[],int len1,float data2[],int len2)
+  61          {
+  62   1        uint8 xdata i;
+*** ERROR C202 IN LINE 62 OF stat.c: 'uint8': undefined identifier
+*** ERROR C141 IN LINE 62 OF stat.c: syntax error near 'xdata', expected ';'
+  63   1        float xdata mean1 = get_mean(data1,len1);
+*** ERROR C141 IN LINE 63 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 63 OF stat.c: 'mean1': undefined identifier
+  64   1        float xdata mean2 = get_mean(data2,len2);
+*** ERROR C141 IN LINE 64 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 64 OF stat.c: 'mean2': undefined identifier
+  65   1        float xdata std1 =  get_std(data1,len1);
+*** ERROR C141 IN LINE 65 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 65 OF stat.c: 'std1': undefined identifier
+  66   1        float xdata std2 =  get_std(data2,len2);
+*** ERROR C141 IN LINE 66 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 66 OF stat.c: 'std2': undefined identifier
+  67   1        float xdata ab = 0;
+*** ERROR C141 IN LINE 67 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 67 OF stat.c: 'ab': undefined identifier
+  68   1        float xdata cov;
+*** ERROR C141 IN LINE 68 OF stat.c: syntax error near 'float', expected '__asm'
+*** ERROR C202 IN LINE 68 OF stat.c: 'cov': undefined identifier
+C51 COMPILER V9.59.0.0   STAT                                                              05/26/2020 00:10:52 PAGE 3   
+
+  69   1        for (i = 0; i < len1; i++) 
+*** ERROR C202 IN LINE 69 OF stat.c: 'i': undefined identifier
+  70   1        {
+  71   2          ab += data1[i] * data2[i];
+*** ERROR C202 IN LINE 71 OF stat.c: 'ab': undefined identifier
+  72   2        }
+  73   1        ab = ab / len1;
+*** ERROR C202 IN LINE 73 OF stat.c: 'ab': undefined identifier
+  74   1        cov = ab - (mean1 * mean2);
+*** ERROR C202 IN LINE 74 OF stat.c: 'cov': undefined identifier
+  75   1        cov = cov / (std1 * std2);
+*** ERROR C202 IN LINE 75 OF stat.c: 'cov': undefined identifier
+  76   1        return cov;
+*** ERROR C202 IN LINE 76 OF stat.c: 'cov': undefined identifier
+  77   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  54 ERROR(S)

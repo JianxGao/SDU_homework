@@ -1,0 +1,9 @@
+"..\Output\main.obj",
+"..\Output\delay.obj",
+"..\Output\uart.obj",
+"..\Output\MPU6050.obj" 
+TO "..\Output\MPU6050" 
+PRINT("..\Output\MPU6050.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 
+CODE( 0X0000-0XFFF8 )
+XDATA( 0X0000-0XFFFF )

@@ -1,0 +1,9 @@
+﻿  mlr.c
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(44): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(85): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(88): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(99): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(100): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(102): warning C4013: “time”未定义；假设外部返回 int
+c:\users\jx_g\desktop\python_to_c\c_implement\multivariate_linear_regression\mlr.c(211): warning C4305: “初始化”: 从“double”到“float”截断
+  Multivariate_Linear_Regression.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\Multivariate_Linear_Regression\Debug\Multivariate_Linear_Regression.exe

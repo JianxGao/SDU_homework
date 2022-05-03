@@ -1,0 +1,1685 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN ..\Output\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Lib;..\inc;..\Project) D
+                    -EBUG OBJECTEXTEND PRINT(..\Output\main.lst) TABS(2) OBJECT(..\Output\main.obj)
+
+line level    source
+
+   1          #include  "delay.h"
+   2          #include  "mpu6050.H" 
+   3          #include  "uart.h"
+   4          #include  "math.h"
+   5          //// 用于显示6轴数据，实际使用时可以注释掉
+   6          //int xdata zhengshu;
+   7          //int xdata xiaoshu;
+   8          //double xdata data_acc ;
+   9          //double xdata data_gyro ;
+  10          /**********************
+  11          引脚别名定义
+  12          ***********************/
+  13          sbit rs=P3^2;        //1602的数据/指令选择控制线 
+  14          sbit rw=P3^3;        //1602的读写控制线 
+  15          sbit en=P3^4;        //1602的使能控制线 
+  16          
+  17          sbit key1=P7^4;
+  18          sbit key2=P7^5;
+  19          sbit key3=P7^6;
+  20          sbit key4=P7^7;
+  21          
+  22          sbit led2=P3^5;
+  23          sbit led1=P1^6;
+  24          double  gyro_data;
+  25          double  acc_data;
+  26          // 获取6轴数据
+  27          double   acc_x_array[64];
+  28          double   acc_y_array[64];
+  29          double   acc_z_array[64];
+  30          double   gyro_x_array[64];
+  31          double   gyro_y_array[64];
+  32          double   gyro_z_array[64];
+  33          // body
+  34          double  acc_body_x_array[64];
+  35          double  acc_body_y_array[64];
+  36          double  acc_body_z_array[64];
+  37          // gravity
+  38          //double   acc_gravity_x_array[64];
+  39          //double   acc_gravity_y_array[64];
+  40          //double   acc_gravity_z_array[64];
+  41          //// fft_data
+  42          //// body
+  43          //double   fft_body_x_array[128];
+  44          //double   fft_body_y_array[128];
+  45          //double   fft_body_z_array[128];
+  46          //// gravity
+  47          //double  fft_gravity_x_array[128];
+  48          //double  fft_gravity_y_array[128];
+  49          //double  fft_gravity_z_array[128];
+  50          //// total
+  51          //double   fft_total_x_array[128];
+  52          //double   fft_total_y_array[128];
+  53          //double   fft_total_z_array[128];
+  54          //// gyro
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 2   
+
+  55          //double   fft_gyro_x_array[128];
+  56          //double   fft_gyro_y_array[128];
+  57          //double   fft_gyro_z_array[128];
+  58          
+  59          // 巴特沃斯滤波器所用缓存的数组
+  60          double  xBuf[4] ={0};
+  61          double  yBuf[4] ={0};
+  62          // 滤波器的系数
+  63          double xdata noise_b[4] = {0.52762438, 1.58287315, 1.58287315, 0.52762438};
+  64          double xdata noise_a[4] = {1, 1.76004188, 1.18289326, 0.27805992};
+  65          //double xdata get_gravity_b[4] ={6.45184913e-06, 1.93555474e-05, 1.93555474e-05, 6.45184913e-06};
+  66          //double xdata get_gravity_a[4] ={1, -2.92460624, 2.85202782, -0.92736997};
+  67          double xdata get_body_b[4] ={0.9630005, -2.88900151, 2.88900151, -0.9630005};
+  68          double xdata get_body_a[4] ={1.       , -2.92460624, 2.85202782, -0.92736997};
+  69          
+  70          double  feature[36]={0};
+  71          
+  72          int result_array[10] ={0};
+  73          int decide_array[5] = {0};
+  74          int temp = 0;
+  75          int index = 0;
+  76          uint8 i;
+  77          uint8 j;
+  78          uint8 result[5]={0};
+  79          uint8 result_two[5] ={0};
+  80          uint8 epoch;
+  81          /**************************************
+  82          功能描述：LCD1602写命令函数 
+  83          入口参数int8 com
+  84          返回值：无
+  85          ***************************************/
+  86          void lcd_wcom(uint8 com)                 
+  87          { 
+  88   1          rs=0;               //选择指令寄存器 
+  89   1          rw=0;               //选择写 
+  90   1          P6=com;             //把命令字送入P2 
+  91   1          delay_ms(1);        //延时一小会儿，让1602准备接收数据 
+  92   1          en=1;               //使能线电平变化，命令送入1602的8位数据口 
+  93   1          en=0; 
+  94   1      } 
+  95          
+  96          /**************************************
+  97          功能描述：LCD1602写数据函数 
+  98          入口参数：uint8 dat
+  99          返回值：无
+ 100          ***************************************/
+ 101          void lcd_wdat(uint8 dat)          
+ 102          { 
+ 103   1          rs=1;               //选择数据寄存器 
+ 104   1          rw=0;               //选择写 
+ 105   1          P6=dat;             //把要显示的数据送入P2 
+ 106   1          delay_ms(1);        //延时一小会儿，让1602准备接收数据 
+ 107   1          en=1;               //使能线电平变化，数据送入1602的8位数据口 
+ 108   1          en=0; 
+ 109   1      } 
+ 110          
+ 111          /**************************************
+ 112          功能描述：LCD1602初始化函数 
+ 113          入口参数：无
+ 114          返回值：无
+ 115          ***************************************/
+ 116          void lcd_init(void)                 
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 3   
+
+ 117          { 
+ 118   1          lcd_wcom(0x38);       //8位数据，双列，5*7字形 
+ 119   1          delay_ms(20);
+ 120   1          lcd_wcom(0x38);
+ 121   1          delay_ms(20); 
+ 122   1          lcd_wcom(0x38); 
+ 123   1          lcd_wcom(0x0c);       //开启显示屏，关光标，光标不闪烁 
+ 124   1          lcd_wcom(0x06);       //显示地址递增，即写一个数据后，显示位置右移一位 
+ 125   1          lcd_wcom(0x01);       //清屏 
+ 126   1      }     
+ 127          
+ 128          /**************************************
+ 129          功能描述：LCD1602按指定位置显示一个字符
+ 130          入口参数：uint8 X, uint8 Y, uint8 DData
+ 131          返回值：无
+ 132          ***************************************/
+ 133          void DisplayOneChar( uint8 X,uint8 Y, uint8 DData)
+ 134          {
+ 135   1        Y &= 0x1;
+ 136   1        X &= 0xF; //限制X不能大于15，Y不能大于1
+ 137   1        if (Y) X |= 0x40; //当要显示第二行时地址码+0x40;
+ 138   1        X |= 0x80; //算出指令码
+ 139   1        lcd_wcom(X); //发命令字
+ 140   1        lcd_wdat(DData); //发数据
+ 141   1      }
+ 142          
+ 143          /**************************************
+ 144          功能描述：LCD1602按指定位置显示一串字符
+ 145          入口参数：uint8 X, uint8 Y, uint8 DData  X代表第X+1列，Y代表第Y+1行
+ 146          返回值：无
+ 147          ***************************************/
+ 148          void DisplayListChar(uint8 Y, uint8 X, uint8  *DData)
+ 149          {
+ 150   1        uint8 ListLength;
+ 151   1      
+ 152   1        ListLength = 0;
+ 153   1        Y &= 0x1;
+ 154   1        X &= 0xF; //限制X不能大于15，Y不能大于1
+ 155   1        while (DData[ListLength]>0x19) //若到达字串尾则退出
+ 156   1          {
+ 157   2            if (X <= 0xF)        //X坐标应小于0xF
+ 158   2              {
+ 159   3                DisplayOneChar(X, Y, DData[ListLength]); //显示单个字符
+ 160   3                ListLength++;
+ 161   3                X++;
+ 162   3              }
+ 163   2          }
+ 164   1      }
+ 165          /*********************************************************************************************************
+             -***********************************
+ 166          // 计算统计量函数
+ 167          /********************************************************************************/
+ 168          double get_mean(double squence[], int len)
+ 169          {
+ 170   1        uint8 xdata i;
+ 171   1        double xdata output = 0;
+ 172   1        for(i=0;i<len;i++)
+ 173   1        {
+ 174   2          output+=squence[i];
+ 175   2        }
+ 176   1        return output/len;
+ 177   1      }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 4   
+
+ 178          double get_std(double squence[],int len)
+ 179          {
+ 180   1          double xdata mean = get_mean(squence,len);
+ 181   1          double xdata output = 0;
+ 182   1          uint8 xdata i;
+ 183   1          for (i = 0; i < len; i++) 
+ 184   1          {
+ 185   2            output += pow((squence[i] - mean), 2);
+ 186   2          }
+ 187   1          output = (output / len);
+ 188   1          return pow(output, 0.5);
+ 189   1      }
+ 190          double get_min(double squence[],int len)
+ 191          { 
+ 192   1        uint8 xdata i;
+ 193   1        double xdata output = squence[0];
+ 194   1        for (i=0;i<len;i++)
+ 195   1        {
+ 196   2          if(squence[i]<output)
+ 197   2          {
+ 198   3            output = squence[i];
+ 199   3          }
+ 200   2        }
+ 201   1        return output;
+ 202   1      }
+ 203          double get_max(double squence[],int len)
+ 204          { 
+ 205   1        uint8 xdata i;
+ 206   1        double xdata output = squence[0];
+ 207   1        for (i=0;i<len;i++)
+ 208   1        {
+ 209   2          if(squence[i]>output)
+ 210   2          {
+ 211   3            output = squence[i];
+ 212   3          }
+ 213   2        }
+ 214   1        return output;
+ 215   1      }
+ 216          double get_energy(double squence[],int len) 
+ 217          {
+ 218   1        uint8 xdata i;
+ 219   1        double xdata output = 0;
+ 220   1        for (i = 0; i < len; i++) 
+ 221   1        {
+ 222   2          output += pow(squence[i], 2);
+ 223   2        }
+ 224   1        return output / len;
+ 225   1      }
+ 226          double get_corrcoef(double data1[],int len1,double data2[],int len2)
+ 227          {
+ 228   1        uint8 xdata i;
+ 229   1        double xdata mean1 = get_mean(data1,len1);
+ 230   1        double xdata mean2 = get_mean(data2,len2);
+ 231   1        double xdata std1 =   get_std(data1,len1);
+ 232   1        double xdata std2 =   get_std(data2,len2);
+ 233   1        double xdata ab = 0;
+ 234   1        double xdata cov;
+ 235   1        for (i = 0; i < len1; i++) 
+ 236   1        {
+ 237   2          ab += data1[i] * data2[i];
+ 238   2        }
+ 239   1        ab = ab / len1;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 5   
+
+ 240   1        cov = ab - (mean1 * mean2);
+ 241   1        cov = cov / (std1 * std2);
+ 242   1        return cov;
+ 243   1      }
+ 244          /*********************************************************************************************************
+             -***********************************
+ 245          ////******************************************************************************************************
+             -**************************************
+ 246          //// 滤波函数
+ 247          ////********************************************************************************
+ 248          //// 中值滤波
+ 249          //// 第一个元素
+ 250          //void single_midian_first(double inputdata[])
+ 251          //{
+ 252          //  if(inputdata[0]*inputdata[1]<=0)
+ 253          //  {
+ 254          //    temp_signal[0]=0;
+ 255          //  }
+ 256          //  else
+ 257          //  {
+ 258          //    if(pow(inputdata[0],2)-pow(inputdata[1],2)>0)
+ 259          //      {temp_signal[0]=inputdata[1];}
+ 260          //    else
+ 261          //      {temp_signal[0]=inputdata[0];}
+ 262          //  }
+ 263          //}
+ 264          //// 最后一个元素
+ 265          //void single_midian_last(double inputdata[],int i)
+ 266          //{
+ 267          //  if(inputdata[i]*inputdata[i-1]<=0)
+ 268          //  {
+ 269          //    temp_signal[i]=0;
+ 270          //  }
+ 271          //  else
+ 272          //  {
+ 273          //    if(pow(inputdata[i],2)-pow(inputdata[i-1],2)>0)
+ 274          //      {temp_signal[i]=inputdata[i-1];}
+ 275          //    else
+ 276          //      {temp_signal[i]=inputdata[i];}
+ 277          //  }
+ 278          //}
+ 279          //// 其他元素
+ 280          //void single_midian_filter(double inputdata[],int i)
+ 281          //{
+ 282          //  temp_signal[i] = (inputdata[i-1]+inputdata[i]+inputdata[i+1])/3;
+ 283          //}
+ 284          //********************************************************************************************************
+             -************************************/
+ 285          //  巴特沃斯低通滤波器（分开身体和重力数据）
+ 286          void init_buf_array(double*x,double*y)
+ 287          {
+ 288   1        *x=0; *++x=0; *++x=0; *++x=0;
+ 289   1        *y=0; *++y=0; *++y=0; *++y=0;
+ 290   1      }
+ 291          
+ 292          double low_pass_single_filter(double data_x,double a[],double b[])
+ 293          {
+ 294   1        uint8 xdata i,j;
+ 295   1        for (j = 3; j > 0; j--) {
+ 296   2            yBuf[j] = yBuf[j - 1];
+ 297   2            xBuf[j] = xBuf[j - 1];
+ 298   2          }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 6   
+
+ 299   1          xBuf[0] = data_x;
+ 300   1          yBuf[0] = 0;
+ 301   1          for (i = 1; i < 4; i++) {
+ 302   2            yBuf[0] = yBuf[0] + b[i] * xBuf[i];
+ 303   2            yBuf[0] = yBuf[0] - a[i] * yBuf[i];
+ 304   2          }
+ 305   1          yBuf[0] = yBuf[0] + b[0] * xBuf[0];
+ 306   1          return yBuf[0];
+ 307   1      }
+ 308          void low_pass_filter(double output[],double data_x[],double a[],double b[],int number)
+ 309          {
+ 310   1        uint8 xdata i;
+ 311   1        init_buf_array(xBuf,yBuf);
+ 312   1        for(i =0;i<number;i++)
+ 313   1        {
+ 314   2          output[i] = low_pass_single_filter(data_x[i],a,b);
+ 315   2        }
+ 316   1      }
+ 317          // fft
+ 318          void kfft(double output[],double pr[], int n, int k)
+ 319          {
+ 320   1        double xdata fr[64], fi[64];
+ 321   1        double xdata pi[64]={0};
+ 322   1        int xdata it, m, is, i, j, nv, l0;
+ 323   1        double xdata p, q, s, vr, vi, poddr, poddi;
+ 324   1        for (it=0;it<n;it++)  //将pr[0]和pi[0]循环赋值给fr[]和fi[]
+ 325   1        {
+ 326   2          m = it;
+ 327   2          is = 0;
+ 328   2          for (i=0;i<k;i++)
+ 329   2          {
+ 330   3            j = m/2;
+ 331   3            is = 2*is+(m-2*j);
+ 332   3            m = j;
+ 333   3          }
+ 334   2          fr[it] = pr[is];
+ 335   2          fi[it] = pi[is];
+ 336   2        }
+ 337   1        pr[0] = 1.0;
+ 338   1        pi[0] = 0.0;
+ 339   1        p = 6.283185306 / (1.0*n);
+ 340   1        pr[1] = cos(p); //将w=e^-j2pi/n用欧拉公式表示
+ 341   1        pi[1] = -sin(p);
+ 342   1      
+ 343   1        for(i=2;i<n;i++)  //计算pr[]
+ 344   1        {
+ 345   2          p = pr[i-1]*pr[1];
+ 346   2          q = pi[i-1]*pi[1];
+ 347   2          s =(pr[i-1]+pi[i-1])*(pr[1]+pi[1]);
+ 348   2          pr[i]=p-q;
+ 349   2          pi[i]=s-p-q;
+ 350   2        }
+ 351   1        for (it = 0; it <= n - 2; it = it + 2)
+ 352   1        {
+ 353   2          vr = fr[it];
+ 354   2          vi = fi[it];
+ 355   2          fr[it] = vr + fr[it + 1];
+ 356   2          fi[it] = vi + fi[it + 1];
+ 357   2          fr[it + 1] = vr - fr[it + 1];
+ 358   2          fi[it + 1] = vi - fi[it + 1];
+ 359   2        }
+ 360   1        m = n / 2;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 7   
+
+ 361   1        nv = 2;
+ 362   1        for (l0 = k - 2; l0 >= 0; l0--) //蝴蝶操作
+ 363   1        {
+ 364   2          m = m / 2;
+ 365   2          nv = 2 * nv;
+ 366   2          for (it = 0; it <= (m - 1)*nv; it = it + nv)
+ 367   2            for (j = 0; j <= (nv / 2) - 1; j++)
+ 368   2            {
+ 369   3              p = pr[m*j] * fr[it + j + nv / 2];
+ 370   3              q = pi[m*j] * fi[it + j + nv / 2];
+ 371   3              s = pr[m*j] + pi[m*j];
+ 372   3              s = s * (fr[it + j + nv / 2] + fi[it + j + nv / 2]);
+ 373   3              poddr = p - q;
+ 374   3              poddi = s - p - q;
+ 375   3              fr[it + j + nv / 2] = fr[it + j] - poddr;
+ 376   3              fi[it + j + nv / 2] = fi[it + j] - poddi;
+ 377   3              fr[it + j] = fr[it + j] + poddr;
+ 378   3              fi[it + j] = fi[it + j] + poddi;
+ 379   3            }
+ 380   2        }
+ 381   1        for (i = 0; i < n ; i++)
+ 382   1        {
+ 383   2          output[i] = sqrt(fr[i] * fr[i] + fi[i] * fi[i])/n;  //幅值计算
+ 384   2        }
+ 385   1        //return;
+ 386   1      }
+ 387          
+ 388          //********************************************************************************************************
+             -************************************
+ 389          //********************************************************************************************************
+             -************************************
+ 390          double get_acc_data(int sport_data)
+ 391          {
+ 392   1        acc_data  = sport_data;
+ 393   1        acc_data /= 2048;
+ 394   1        return acc_data;
+ 395   1      }
+ 396          double get_gyro_data(int sport_data)
+ 397          {
+ 398   1        gyro_data  = sport_data;
+ 399   1        gyro_data *= 0.001064;
+ 400   1        return gyro_data;
+ 401   1      }
+ 402          
+ 403          /***************************************************************************
+ 404           * 描  述 : 主函数
+ 405           * 入  参 : 无
+ 406           * 返回值 : 无
+ 407           **************************************************************************/
+ 408          
+ 409          
+ 410          
+ 411          int main()
+ 412          {       
+ 413   1        //AUXR |=0x02; // 使用拓展内存（目前暂时不需要）
+ 414   1        lcd_init();                          //液晶初始化 
+ 415   1        delay_ms(500);
+ 416   1        P3M1 &= 0xFE; P3M0 &= 0xFE;                   //设置P3.0为准双向口
+ 417   1        P3M1 &= 0xFD; P3M0 |= 0x02;                   //设置P3.1为推挽输出
+ 418   1        delay_ms(500);    //上电延时    
+ 419   1        UartInit();
+ 420   1        InitMPU6050();  //初始化MPU6050
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 8   
+
+ 421   1        delay_ms(150);
+ 422   1      
+ 423   1        DisplayOneChar(1,0,0x30);
+ 424   1        DisplayOneChar(2,0,0x3A);
+ 425   1        DisplayOneChar(3,0,0+0x30);
+ 426   1        DisplayOneChar(4,0,result[0]+0x30);
+ 427   1        
+ 428   1        DisplayOneChar(6,0,0x31);
+ 429   1        DisplayOneChar(7,0,0x3A);
+ 430   1        DisplayOneChar(8,0,0+0x30);
+ 431   1        DisplayOneChar(9,0,result[1]+0x30);
+ 432   1        
+ 433   1        DisplayOneChar(11,0,0x32);
+ 434   1        DisplayOneChar(12,0,0x3A);
+ 435   1        DisplayOneChar(13,0,0+0x30);
+ 436   1        DisplayOneChar(14,0,result[2]+0x30);
+ 437   1        
+ 438   1        DisplayOneChar(1,1,0x33);
+ 439   1        DisplayOneChar(2,1,0x3A);
+ 440   1        DisplayOneChar(3,1,0+0x30);
+ 441   1        DisplayOneChar(4,1,result[3]+0x30);
+ 442   1        
+ 443   1      
+ 444   1        DisplayOneChar(6,1,0x34);
+ 445   1        DisplayOneChar(7,1,0x3A);
+ 446   1        DisplayOneChar(8,1,0+0x30);
+ 447   1        DisplayOneChar(9,1,result[4]+0x30);
+ 448   1        
+ 449   1        while(1)
+ 450   1        { 
+ 451   2      // 清零计数
+ 452   2          if(key1==0)
+ 453   2          {     
+ 454   3      // 单次识别     
+ 455   3            led1=0;
+ 456   3            led2=0;
+ 457   3            delay_ms(500);
+ 458   3            led1=1;
+ 459   3            led2=1;
+ 460   3            result[0] = 0;
+ 461   3            result[1] = 0;
+ 462   3            result[2] = 0;
+ 463   3            result[3] = 0;
+ 464   3            result[4] = 0;
+ 465   3            result_two[0] = 0;
+ 466   3            result_two[1] = 0;
+ 467   3            result_two[2] = 0;
+ 468   3            result_two[3] = 0;
+ 469   3            result_two[4] = 0;
+ 470   3      
+ 471   3            DisplayOneChar(3,0,result_two[0]+0x30);
+ 472   3            DisplayOneChar(4,0,result[0]+0x30);
+ 473   3            DisplayOneChar(8,0,result_two[0]+0x30);
+ 474   3            DisplayOneChar(9,0,result[1]+0x30);
+ 475   3            DisplayOneChar(13,0,result_two[2]+0x30);
+ 476   3            DisplayOneChar(14,0,result[2]+0x30);
+ 477   3            DisplayOneChar(3,1,result_two[3]+0x30);
+ 478   3            DisplayOneChar(4,1,result[3]+0x30);
+ 479   3            DisplayOneChar(8,1,result_two[4]+0x30);
+ 480   3            DisplayOneChar(9,1,result[4]+0x30);
+ 481   3          }
+ 482   2          if(key2==0)
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 9   
+
+ 483   2          {       
+ 484   3            delay_ms(500);  
+ 485   3            for (i=0;i<5;i++)
+ 486   3            {
+ 487   4              delay_ms(5);
+ 488   4              decide_array[i]=0;
+ 489   4            }   
+ 490   3            delay_ms(10);     
+ 491   3            led1=0;
+ 492   3            led2=0;
+ 493   3            // 获取数据
+ 494   3            for(i=0;i<64;i++)
+ 495   3            {
+ 496   4              delay_ms(30);
+ 497   4              acc_x_array[i]  = get_acc_data(GetData(ACCEL_XOUT_H));
+ 498   4              acc_y_array[i]  = get_acc_data(GetData(ACCEL_YOUT_H));
+ 499   4              acc_z_array[i]  = get_acc_data(GetData(ACCEL_ZOUT_H));          
+ 500   4              gyro_x_array[i] = get_gyro_data(GetData(GYRO_XOUT_H));
+ 501   4              gyro_y_array[i] = get_gyro_data(GetData(GYRO_YOUT_H));
+ 502   4              gyro_z_array[i] = get_gyro_data(GetData(GYRO_ZOUT_H));
+ 503   4            }
+ 504   3            led1=1;
+ 505   3            led2=1;
+ 506   3            
+ 507   3      //        // 分别获取身体和重力数据 + 角速度滤波
+ 508   3      //      for(i=0;i<64;i++)
+ 509   3      //      {
+ 510   3            low_pass_filter(acc_x_array,     acc_x_array, noise_a,     noise_b,    64);
+ 511   3            low_pass_filter(acc_y_array,     acc_y_array, noise_a,     noise_b,    64);
+ 512   3            low_pass_filter(acc_z_array,     acc_z_array, noise_a,     noise_b,    64);
+ 513   3            low_pass_filter(gyro_x_array,    gyro_x_array,noise_a,     noise_b,    64);
+ 514   3            low_pass_filter(gyro_y_array,    gyro_y_array,noise_a,     noise_b,    64);
+ 515   3            low_pass_filter(gyro_z_array,    gyro_z_array,noise_a,     noise_b,    64);
+ 516   3            //本质上是高通，不想再改函数名了
+ 517   3            low_pass_filter(acc_body_x_array,    acc_x_array, get_body_a,    get_body_b,     64);
+ 518   3            low_pass_filter(acc_body_y_array,    acc_y_array, get_body_a,    get_body_b,     64);
+ 519   3            low_pass_filter(acc_body_z_array,    acc_z_array, get_body_a,    get_body_b,     64);
+ 520   3      //      }
+ 521   3            delay_ms(200);
+ 522   3            led1=0;
+ 523   3            led2=0;
+ 524   3            // 特征提取
+ 525   3            //0-14
+ 526   3            // acc_body_x
+ 527   3            feature[0] = get_mean(acc_body_x_array,64);
+ 528   3            feature[1] = get_std(acc_body_x_array,64);
+ 529   3            feature[2] = get_min(acc_body_x_array,64);
+ 530   3            feature[3] = get_max(acc_body_x_array,64);
+ 531   3            feature[4] = get_energy(acc_body_x_array,64);
+ 532   3            // acc_body_y
+ 533   3            feature[5] = get_mean(acc_body_y_array,64);
+ 534   3            feature[6] = get_std(acc_body_y_array,64);
+ 535   3            feature[7] = get_min(acc_body_y_array,64);
+ 536   3            feature[8] = get_max(acc_body_y_array,64);
+ 537   3            feature[9] = get_energy(acc_body_y_array,64);
+ 538   3            // acc_body_z
+ 539   3            feature[10] = get_mean(acc_body_z_array,64);
+ 540   3            feature[11] = get_std(acc_body_z_array,64);
+ 541   3            feature[12] = get_min(acc_body_z_array,64);
+ 542   3            feature[13] = get_max(acc_body_z_array,64);
+ 543   3            feature[14] = get_energy(acc_body_z_array,64);
+ 544   3            
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 10  
+
+ 545   3            //15-29
+ 546   3            //gyro_x
+ 547   3            feature[15] = get_mean(gyro_x_array,64);
+ 548   3            feature[16] = get_std(gyro_x_array,64);
+ 549   3            feature[17] = get_min(gyro_x_array,64);
+ 550   3            feature[18] = get_max(gyro_x_array,64);
+ 551   3            feature[19] = get_energy(gyro_x_array,64);
+ 552   3            //gyro_y
+ 553   3            feature[20] = get_mean(gyro_y_array,64);
+ 554   3            feature[21] = get_std(gyro_y_array,64);
+ 555   3            feature[22] = get_min(gyro_y_array,64);
+ 556   3            feature[23] = get_max(gyro_y_array,64);
+ 557   3            feature[24] = get_energy(gyro_y_array,64);
+ 558   3            //gyro_z
+ 559   3            feature[25] = get_mean(gyro_z_array,64);
+ 560   3            feature[26] = get_std(gyro_z_array,64);
+ 561   3            feature[27] = get_min(gyro_z_array,64);
+ 562   3            feature[28] = get_max(gyro_z_array,64);
+ 563   3            feature[29] = get_energy(gyro_z_array,64);  
+ 564   3      
+ 565   3            // acc_body_correlation
+ 566   3            feature[31] = get_corrcoef(acc_body_x_array,64,acc_body_y_array,64);
+ 567   3            feature[32] = get_corrcoef(acc_body_y_array,64,acc_body_z_array,64);
+ 568   3            feature[33] = get_corrcoef(acc_body_x_array,64,acc_body_z_array,64);
+ 569   3            // gyro_correlation
+ 570   3            feature[34] = get_corrcoef(gyro_x_array,64,gyro_y_array,64);
+ 571   3            feature[35] = get_corrcoef(gyro_x_array,64,gyro_z_array,64);
+ 572   3            feature[36] = get_corrcoef(gyro_y_array,64,gyro_z_array,64);
+ 573   3          
+ 574   3            // 随机森林算法
+ 575   3            // tree0
+ 576   3            if(feature[14]<=1.935)
+ 577   3            {
+ 578   4              if (feature[14]<=0.011)
+ 579   4              {
+ 580   5                result_array[0]=0;
+ 581   5              }
+ 582   4              else
+ 583   4              {
+ 584   5                if (feature[9]<=0.159)
+ 585   5                {
+ 586   6                  result_array[0]=1;
+ 587   6                }
+ 588   5                else
+ 589   5                {
+ 590   6                  if (feature[28]<=-9.874)
+ 591   6                  {
+ 592   7                    result_array[0]=3;
+ 593   7                  }
+ 594   6                  else
+ 595   6                  {
+ 596   7                    result_array[0]=4;
+ 597   7                  }
+ 598   6                }
+ 599   5              }
+ 600   4            }
+ 601   3            else
+ 602   3            {
+ 603   4              if (feature[26]<=0.022)
+ 604   4              {
+ 605   5                result_array[0]=2;
+ 606   5              }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 11  
+
+ 607   4              else
+ 608   4              {
+ 609   5                result_array[0]=3;
+ 610   5              }
+ 611   4            }
+ 612   3            // tree1
+ 613   3            if(feature[26]<=4.894)
+ 614   3            {
+ 615   4              if (feature[12]<=0.156)
+ 616   4              {
+ 617   5                result_array[1]=0;
+ 618   5              }
+ 619   4              else
+ 620   4              {
+ 621   5                if (feature[23]<=-1.345)
+ 622   5                {
+ 623   6                  result_array[1]=4;
+ 624   6                }
+ 625   5                else
+ 626   5                {
+ 627   6                  result_array[1]=1;            
+ 628   6                }
+ 629   5              }
+ 630   4            }
+ 631   3            else
+ 632   3            {
+ 633   4              if (feature[9]<=4.871)
+ 634   4              {
+ 635   5                result_array[1]=2;
+ 636   5              }
+ 637   4              else
+ 638   4              {
+ 639   5                result_array[1]=3;
+ 640   5              }
+ 641   4            }
+ 642   3            // tree2      
+ 643   3            if(feature[20]<=0.669)
+ 644   3            {
+ 645   4              if (feature[12]<=0.176)
+ 646   4              {
+ 647   5                result_array[2]=0;
+ 648   5              }
+ 649   4              else
+ 650   4              {
+ 651   5                if (feature[6]<=0.369)
+ 652   5                {
+ 653   6                  result_array[2]=1;
+ 654   6                }
+ 655   5                else
+ 656   5                {
+ 657   6                  if (feature[2]<=3.614)
+ 658   6                  {
+ 659   7                    result_array[2]=4;
+ 660   7                  }
+ 661   6                  else
+ 662   6                  {
+ 663   7                    result_array[2]=3;
+ 664   7                  }
+ 665   6                }
+ 666   5              }
+ 667   4            }
+ 668   3            else
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 12  
+
+ 669   3            {
+ 670   4              if (feature[6]<=2.166)
+ 671   4              {
+ 672   5                result_array[2]=2;
+ 673   5              }
+ 674   4              else
+ 675   4              {
+ 676   5                result_array[2]=3;
+ 677   5              }
+ 678   4            }
+ 679   3            // tree3
+ 680   3            if(feature[12]<=2.91)
+ 681   3            {
+ 682   4              if (feature[24]<=0.028)
+ 683   4              {
+ 684   5                result_array[3]=0;
+ 685   5              }
+ 686   4              else
+ 687   4              {
+ 688   5                if (feature[21]<=0.739)
+ 689   5                {
+ 690   6                  result_array[3]=1;
+ 691   6                }
+ 692   5                else
+ 693   5                {
+ 694   6                  if (feature[11]<=0.662)
+ 695   6                  {
+ 696   7                    result_array[3]=4;
+ 697   7                  }
+ 698   6                  else
+ 699   6                  {
+ 700   7                    result_array[3]=3;
+ 701   7                  }
+ 702   6                }
+ 703   5              }
+ 704   4            }
+ 705   3            else
+ 706   3            {
+ 707   4              if (feature[23]<=5.961)
+ 708   4              {
+ 709   5                result_array[3]=3;
+ 710   5              }
+ 711   4              else
+ 712   4              {
+ 713   5                result_array[3]=2;
+ 714   5              }
+ 715   4            }
+ 716   3            // tree4
+ 717   3            if(feature[4]<=3.057)
+ 718   3            {
+ 719   4              if (feature[13]<=-0.207)
+ 720   4              {
+ 721   5                if (feature[28]<= -3.106)
+ 722   5                {
+ 723   6                  result_array[4]=4;
+ 724   6                }
+ 725   5                else
+ 726   5                {
+ 727   6                  result_array[4]=1;
+ 728   6                }         
+ 729   5              }
+ 730   4              else
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 13  
+
+ 731   4              {
+ 732   5                result_array[4]=0;
+ 733   5              }
+ 734   4            }
+ 735   3            else
+ 736   3            {
+ 737   4              if (feature[8] <= -5.49)
+ 738   4              {
+ 739   5                if (feature[21]<= 3.686)
+ 740   5                {
+ 741   6                  result_array[4]=3;
+ 742   6                }
+ 743   5                else
+ 744   5                {
+ 745   6                  result_array[4]=2;
+ 746   6                }
+ 747   5              }
+ 748   4              else
+ 749   4              {
+ 750   5                if (feature[12] <= 2.35)
+ 751   5                {
+ 752   6                  result_array[4]=3;
+ 753   6                }
+ 754   5                else
+ 755   5                {
+ 756   6                  result_array[4]=3;
+ 757   6                }
+ 758   5              }
+ 759   4            }
+ 760   3            // tree5
+ 761   3            if(feature[14]<= 1.361)
+ 762   3            {
+ 763   4              if (feature[19]<=0.029)
+ 764   4              {
+ 765   5                result_array[5]=0;
+ 766   5              }
+ 767   4              else
+ 768   4              {
+ 769   5                if (feature[26]<= 1.894)
+ 770   5                {
+ 771   6                  result_array[5]=1;
+ 772   6                }
+ 773   5                else
+ 774   5                {
+ 775   6                  if (feature[2]<= 3.411)   
+ 776   6                  {
+ 777   7                    result_array[5]=4;
+ 778   7                  }           
+ 779   6                  else
+ 780   6                  {
+ 781   7                    result_array[5]=3;
+ 782   7                  }             
+ 783   6                }
+ 784   5              }
+ 785   4            }
+ 786   3            else
+ 787   3            {
+ 788   4              if (feature[26]<= 9.708)
+ 789   4              {
+ 790   5                result_array[5]=2;
+ 791   5              }
+ 792   4              else
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 14  
+
+ 793   4              {
+ 794   5                result_array[5]=3;
+ 795   5              }
+ 796   4            }
+ 797   3            // tree6
+ 798   3            if(feature[21]<= 2.438)
+ 799   3            {
+ 800   4              if (feature[12]<= 0.156)
+ 801   4              {
+ 802   5                result_array[6]=0;
+ 803   5              }
+ 804   4              else
+ 805   4              {
+ 806   5                if (feature[21]<= 0.739)
+ 807   5                {
+ 808   6                  result_array[6]=1;
+ 809   6                }
+ 810   5                else
+ 811   5                {
+ 812   6                  if (feature[1]<= 1.739)   
+ 813   6                  {
+ 814   7                    result_array[6]=4;
+ 815   7                  }           
+ 816   6                  else
+ 817   6                  {
+ 818   7                    result_array[6]=3;
+ 819   7                  }             
+ 820   6                }
+ 821   5              }
+ 822   4            }
+ 823   3            else
+ 824   3            {
+ 825   4              if (feature[28]<= -13.533)
+ 826   4              {
+ 827   5                if (feature[28]<= -13.533)
+ 828   5                {
+ 829   6                  result_array[6]=3;
+ 830   6                }
+ 831   5                else
+ 832   5                {
+ 833   6                  result_array[6]=2;
+ 834   6                }
+ 835   5              }
+ 836   4              else
+ 837   4              {
+ 838   5                result_array[6]=2;
+ 839   5              }
+ 840   4            }
+ 841   3            // tree7
+ 842   3            if(feature[29]<= 24.498)
+ 843   3            {
+ 844   4              if (feature[9]<= 0.165)
+ 845   4              {
+ 846   5                if (feature[12]<= 0.739)
+ 847   5                {
+ 848   6                  result_array[7]=0;
+ 849   6                }
+ 850   5                else
+ 851   5                {
+ 852   6                  result_array[7]=1;
+ 853   6                }
+ 854   5              }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 15  
+
+ 855   4              else
+ 856   4              {           
+ 857   5                result_array[7]=4;                  
+ 858   5              }
+ 859   4            }
+ 860   3            else
+ 861   3            {
+ 862   4              if (feature[7]<= 3.952)
+ 863   4              {
+ 864   5                result_array[7]=2;
+ 865   5              }
+ 866   4              else
+ 867   4              {
+ 868   5                result_array[7]=3;
+ 869   5              }
+ 870   4            }
+ 871   3            // tree8
+ 872   3            if(feature[24]<= 3.941)
+ 873   3            {
+ 874   4              if (feature[16]<= 0.167)
+ 875   4              {
+ 876   5                result_array[8]=0;          
+ 877   5              }
+ 878   4              else
+ 879   4              {           
+ 880   5                if (feature[17]<= 2.15)
+ 881   5                {
+ 882   6                  result_array[8]=1;
+ 883   6                }
+ 884   5                else
+ 885   5                {
+ 886   6                  if (feature[7]<= 4.509)
+ 887   6                  {
+ 888   7                    result_array[8]=4;
+ 889   7                  }
+ 890   6                  else
+ 891   6                  {
+ 892   7                    result_array[8]=3;
+ 893   7                  }
+ 894   6                }             
+ 895   5              }
+ 896   4            }
+ 897   3            else
+ 898   3            {
+ 899   4              if (feature[28]<= -12.827)
+ 900   4              {
+ 901   5                if (feature[8]<= -3.104)
+ 902   5                {
+ 903   6                  result_array[8]=3;
+ 904   6                }
+ 905   5                else
+ 906   5                {
+ 907   6                  result_array[8]=2;
+ 908   6                }
+ 909   5              }
+ 910   4              else
+ 911   4              {
+ 912   5                if (feature[9]<= 0.608)
+ 913   5                {
+ 914   6                  result_array[8]=4;
+ 915   6                }
+ 916   5                else
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 16  
+
+ 917   5                {
+ 918   6                  result_array[8]=2;
+ 919   6                }
+ 920   5              }
+ 921   4            }
+ 922   3            // tree9
+ 923   3            if(feature[14]<= 1.268)
+ 924   3            {
+ 925   4              if (feature[12]<= 0.152)
+ 926   4              {
+ 927   5                result_array[9]=0;          
+ 928   5              }
+ 929   4              else
+ 930   4              {           
+ 931   5                if (feature[2]<= 0.964)
+ 932   5                {
+ 933   6                  result_array[9]=1;
+ 934   6                }
+ 935   5                else
+ 936   5                {
+ 937   6                  if (feature[8]<= -3.568)
+ 938   6                  {
+ 939   7                    result_array[9]=3;
+ 940   7                  }
+ 941   6                  else
+ 942   6                  {
+ 943   7                    result_array[9]=4;
+ 944   7                  }
+ 945   6                }             
+ 946   5              }
+ 947   4            }
+ 948   3            else
+ 949   3            {
+ 950   4              if (feature[26]<= 10.19)
+ 951   4              {
+ 952   5                result_array[9]=2;
+ 953   5              }
+ 954   4              else
+ 955   4              {
+ 956   5                result_array[9]=3;
+ 957   5              }
+ 958   4            }
+ 959   3            for (i=0;i<10;i++)
+ 960   3            {
+ 961   4              if(result_array[i]==0)
+ 962   4              {
+ 963   5                decide_array[0]+=1;
+ 964   5              }
+ 965   4              else if(result_array[i]==1)
+ 966   4              {
+ 967   5                decide_array[1]+=1;
+ 968   5              }
+ 969   4              else if(result_array[i]==2)
+ 970   4              {
+ 971   5                decide_array[2]+=1;
+ 972   5              }
+ 973   4              else if(result_array[i]==3)
+ 974   4              {
+ 975   5                decide_array[3]+=1;
+ 976   5              }
+ 977   4              else if(result_array[i]==4)
+ 978   4              {
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 17  
+
+ 979   5                decide_array[4]+=1;
+ 980   5              }
+ 981   4            }
+ 982   3            temp = decide_array[0];
+ 983   3            index = 0;
+ 984   3            for(i =0;i<5;i++)
+ 985   3            {
+ 986   4              if(decide_array[i]>temp)
+ 987   4              {
+ 988   5                temp = decide_array[i];
+ 989   5                index = i;
+ 990   5              }
+ 991   4            }
+ 992   3      
+ 993   3            if(index==0)
+ 994   3            {
+ 995   4              result[index]+=1;
+ 996   4            }
+ 997   3            if(index==1)
+ 998   3            {
+ 999   4              result[index]+=2;
+1000   4            }
+1001   3            if(index==2)
+1002   3            {
+1003   4              result[index]+=3;
+1004   4            }
+1005   3            if(index==3)
+1006   3            {
+1007   4              result[index]+=6;
+1008   4            }
+1009   3            if(index==4)
+1010   3            {
+1011   4              result[index]+=2;
+1012   4            }
+1013   3                  // 显示
+1014   3            led1=1;
+1015   3            led2=1;
+1016   3            DisplayOneChar(4,0,result[0]+0x30);
+1017   3            DisplayOneChar(9,0,result[1]+0x30);
+1018   3            DisplayOneChar(14,0,result[2]+0x30);
+1019   3            DisplayOneChar(4,1,result[3]+0x30);
+1020   3            DisplayOneChar(9,1,result[4]+0x30);
+1021   3          }
+1022   2      // 连续10次识别
+1023   2          if(key3==0)
+1024   2          {       
+1025   3            for(epoch = 0;epoch<10;epoch++)
+1026   3            {
+1027   4              delay_ms(500);  
+1028   4              for (i=0;i<5;i++)
+1029   4              {
+1030   5                delay_ms(5);
+1031   5                decide_array[i]=0;
+1032   5              }   
+1033   4              delay_ms(10);     
+1034   4              led1=0;
+1035   4              led2=0;
+1036   4              // 获取数据
+1037   4              for(i=0;i<64;i++)
+1038   4              {
+1039   5                delay_ms(30);
+1040   5                acc_x_array[i]  = get_acc_data(GetData(ACCEL_XOUT_H));
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 18  
+
+1041   5                acc_y_array[i]  = get_acc_data(GetData(ACCEL_YOUT_H));
+1042   5                acc_z_array[i]  = get_acc_data(GetData(ACCEL_ZOUT_H));          
+1043   5                gyro_x_array[i] = get_gyro_data(GetData(GYRO_XOUT_H));
+1044   5                gyro_y_array[i] = get_gyro_data(GetData(GYRO_YOUT_H));
+1045   5                gyro_z_array[i] = get_gyro_data(GetData(GYRO_ZOUT_H));
+1046   5              }
+1047   4              led1=1;
+1048   4              led2=1;
+1049   4              
+1050   4        //        // 分别获取身体和重力数据 + 角速度滤波
+1051   4      //        for(i=0;i<64;i++)
+1052   4      //        {
+1053   4              low_pass_filter(acc_x_array,     acc_x_array, noise_a,     noise_b,    64);
+1054   4              low_pass_filter(acc_y_array,     acc_y_array, noise_a,     noise_b,    64);
+1055   4              low_pass_filter(acc_z_array,     acc_z_array, noise_a,     noise_b,    64);
+1056   4              low_pass_filter(gyro_x_array,    gyro_x_array,noise_a,     noise_b,    64);
+1057   4              low_pass_filter(gyro_y_array,    gyro_y_array,noise_a,     noise_b,    64);
+1058   4              low_pass_filter(gyro_z_array,    gyro_z_array,noise_a,     noise_b,    64);
+1059   4              //本质上是高通，不想再改函数名了
+1060   4              low_pass_filter(acc_body_x_array,    acc_x_array, get_body_a,    get_body_b,     64);
+1061   4              low_pass_filter(acc_body_y_array,    acc_y_array, get_body_a,    get_body_b,     64);
+1062   4              low_pass_filter(acc_body_z_array,    acc_z_array, get_body_a,    get_body_b,     64);
+1063   4      //        }
+1064   4              delay_ms(200);
+1065   4              led1=0;
+1066   4              led2=0;
+1067   4              // 特征提取
+1068   4              //0-14
+1069   4              // acc_body_x
+1070   4              feature[0] = get_mean(acc_body_x_array,64);
+1071   4              feature[1] = get_std(acc_body_x_array,64);
+1072   4              feature[2] = get_min(acc_body_x_array,64);
+1073   4              feature[3] = get_max(acc_body_x_array,64);
+1074   4              feature[4] = get_energy(acc_body_x_array,64);
+1075   4              // acc_body_y
+1076   4              feature[5] = get_mean(acc_body_y_array,64);
+1077   4              feature[6] = get_std(acc_body_y_array,64);
+1078   4              feature[7] = get_min(acc_body_y_array,64);
+1079   4              feature[8] = get_max(acc_body_y_array,64);
+1080   4              feature[9] = get_energy(acc_body_y_array,64);
+1081   4              // acc_body_z
+1082   4              feature[10] = get_mean(acc_body_z_array,64);
+1083   4              feature[11] = get_std(acc_body_z_array,64);
+1084   4              feature[12] = get_min(acc_body_z_array,64);
+1085   4              feature[13] = get_max(acc_body_z_array,64);
+1086   4              feature[14] = get_energy(acc_body_z_array,64);
+1087   4              
+1088   4              //15-29
+1089   4              //gyro_x
+1090   4              feature[15] = get_mean(gyro_x_array,64);
+1091   4              feature[16] = get_std(gyro_x_array,64);
+1092   4              feature[17] = get_min(gyro_x_array,64);
+1093   4              feature[18] = get_max(gyro_x_array,64);
+1094   4              feature[19] = get_energy(gyro_x_array,64);
+1095   4              //gyro_y
+1096   4              feature[20] = get_mean(gyro_y_array,64);
+1097   4              feature[21] = get_std(gyro_y_array,64);
+1098   4              feature[22] = get_min(gyro_y_array,64);
+1099   4              feature[23] = get_max(gyro_y_array,64);
+1100   4              feature[24] = get_energy(gyro_y_array,64);
+1101   4              //gyro_z
+1102   4              feature[25] = get_mean(gyro_z_array,64);
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 19  
+
+1103   4              feature[26] = get_std(gyro_z_array,64);
+1104   4              feature[27] = get_min(gyro_z_array,64);
+1105   4              feature[28] = get_max(gyro_z_array,64);
+1106   4              feature[29] = get_energy(gyro_z_array,64);  
+1107   4      
+1108   4              // acc_body_correlation
+1109   4              feature[31] = get_corrcoef(acc_body_x_array,64,acc_body_y_array,64);
+1110   4              feature[32] = get_corrcoef(acc_body_y_array,64,acc_body_z_array,64);
+1111   4              feature[33] = get_corrcoef(acc_body_x_array,64,acc_body_z_array,64);
+1112   4              // gyro_correlation
+1113   4              feature[34] = get_corrcoef(gyro_x_array,64,gyro_y_array,64);
+1114   4              feature[35] = get_corrcoef(gyro_x_array,64,gyro_z_array,64);
+1115   4              feature[36] = get_corrcoef(gyro_y_array,64,gyro_z_array,64);
+1116   4      
+1117   4              // 随机森林算法
+1118   4              // tree0
+1119   4              if (feature[14]<=1.935)
+1120   4              {
+1121   5                if (feature[14]<=0.011)
+1122   5                {
+1123   6                  result_array[0]=0;
+1124   6                }
+1125   5                else
+1126   5                {
+1127   6                  if (feature[9]<=0.159)
+1128   6                  {
+1129   7                    result_array[0]=1;
+1130   7                  }
+1131   6                  else
+1132   6                  {
+1133   7                    if (feature[28]<=-9.874)
+1134   7                    {
+1135   8                      result_array[0]=3;
+1136   8                    }
+1137   7                    else
+1138   7                    {
+1139   8                      result_array[0]=4;
+1140   8                    }
+1141   7                  }
+1142   6                }
+1143   5              }
+1144   4              else
+1145   4              {
+1146   5                if (feature[26]<=0.022)
+1147   5                {
+1148   6                  result_array[0]=2;
+1149   6                }
+1150   5                else
+1151   5                {
+1152   6                  result_array[0]=3;
+1153   6                }
+1154   5              }
+1155   4              // tree1
+1156   4              if (feature[26]<=4.894)
+1157   4              {
+1158   5                if (feature[12]<=0.156)
+1159   5                {
+1160   6                  result_array[1]=0;
+1161   6                }
+1162   5                else
+1163   5                {
+1164   6                  if (feature[23]<=-1.345)
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 20  
+
+1165   6                  {
+1166   7                    result_array[1]=4;
+1167   7                  }
+1168   6                  else
+1169   6                  {
+1170   7                    result_array[1]=1;            
+1171   7                  }
+1172   6                }
+1173   5              }
+1174   4              else
+1175   4              {
+1176   5                if (feature[9]<=4.871)
+1177   5                {
+1178   6                  result_array[1]=2;
+1179   6                }
+1180   5                else
+1181   5                {
+1182   6                  result_array[1]=3;
+1183   6                }
+1184   5              }
+1185   4              // tree2      
+1186   4              if (feature[20]<=0.669)
+1187   4              {
+1188   5                if (feature[12]<=0.176)
+1189   5                {
+1190   6                  result_array[2]=0;
+1191   6                }
+1192   5                else
+1193   5                {
+1194   6                  if (feature[6]<=0.369)
+1195   6                  {
+1196   7                    result_array[2]=1;
+1197   7                  }
+1198   6                  else
+1199   6                  {
+1200   7                    if (feature[2]<=3.614)
+1201   7                    {
+1202   8                      result_array[2]=4;
+1203   8                    }
+1204   7                    else
+1205   7                    {
+1206   8                      result_array[2]=3;
+1207   8                    }
+1208   7                  }
+1209   6                }
+1210   5              }
+1211   4              else
+1212   4              {
+1213   5                if (feature[6]<=2.166)
+1214   5                {
+1215   6                  result_array[2]=2;
+1216   6                }
+1217   5                else
+1218   5                {
+1219   6                  result_array[2]=3;
+1220   6                }
+1221   5              }
+1222   4              // tree3
+1223   4              if (feature[12]<=2.91)
+1224   4              {
+1225   5                if (feature[24]<=0.028)
+1226   5                {
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 21  
+
+1227   6                  result_array[3]=0;
+1228   6                }
+1229   5                else
+1230   5                {
+1231   6                  if (feature[21]<=0.739)
+1232   6                  {
+1233   7                    result_array[3]=1;
+1234   7                  }
+1235   6                  else
+1236   6                  {
+1237   7                    if (feature[11]<=0.662)
+1238   7                    {
+1239   8                      result_array[3]=4;
+1240   8                    }
+1241   7                    else
+1242   7                    {
+1243   8                      result_array[3]=3;
+1244   8                    }
+1245   7                  }
+1246   6                }
+1247   5              }
+1248   4              else
+1249   4              {
+1250   5                if (feature[23]<=5.961)
+1251   5                {
+1252   6                  result_array[3]=3;
+1253   6                }
+1254   5                else
+1255   5                {
+1256   6                  result_array[3]=2;
+1257   6                }
+1258   5              }
+1259   4              // tree4
+1260   4              if (feature[4]<=3.057)
+1261   4              {
+1262   5                if (feature[13]<=-0.207)
+1263   5                {
+1264   6                  if (feature[28]<= -3.106)
+1265   6                  {
+1266   7                    result_array[4]=4;
+1267   7                  }
+1268   6                  else
+1269   6                  {
+1270   7                    result_array[4]=1;
+1271   7                  }         
+1272   6                }
+1273   5                else
+1274   5                {
+1275   6                  result_array[4]=0;
+1276   6                }
+1277   5              }
+1278   4              else
+1279   4              {
+1280   5                if (feature[8] <= -5.49)
+1281   5                {
+1282   6                  if (feature[21]<= 3.686)
+1283   6                  {
+1284   7                    result_array[4]=3;
+1285   7                  }
+1286   6                  else
+1287   6                  {
+1288   7                    result_array[4]=2;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 22  
+
+1289   7                  }
+1290   6                }
+1291   5                else
+1292   5                {
+1293   6                  if (feature[12] <= 2.35)
+1294   6                  {
+1295   7                    result_array[4]=3;
+1296   7                  }
+1297   6                  else
+1298   6                  {
+1299   7                    result_array[4]=3;
+1300   7                  }
+1301   6                }
+1302   5              }
+1303   4              // tree5
+1304   4              if (feature[14]<= 1.361)
+1305   4              {
+1306   5                if (feature[19]<=0.029)
+1307   5                {
+1308   6                  result_array[5]=0;
+1309   6                }
+1310   5                else
+1311   5                {
+1312   6                  if (feature[26]<= 1.894)
+1313   6                  {
+1314   7                    result_array[5]=1;
+1315   7                  }
+1316   6                  else
+1317   6                  {
+1318   7                    if (feature[2]<= 3.411)   
+1319   7                    {
+1320   8                      result_array[5]=4;
+1321   8                    }           
+1322   7                    else
+1323   7                    {
+1324   8                      result_array[5]=3;
+1325   8                    }             
+1326   7                  }
+1327   6                }
+1328   5              }
+1329   4              else
+1330   4              {
+1331   5                if (feature[26]<= 9.708)
+1332   5                {
+1333   6                  result_array[5]=2;
+1334   6                }
+1335   5                else
+1336   5                {
+1337   6                  result_array[5]=3;
+1338   6                }
+1339   5              }
+1340   4              // tree6
+1341   4              if (feature[21]<= 2.438)
+1342   4              {
+1343   5                if (feature[12]<= 0.156)
+1344   5                {
+1345   6                  result_array[6]=0;
+1346   6                }
+1347   5                else
+1348   5                {
+1349   6                  if (feature[21]<= 0.739)
+1350   6                  {
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 23  
+
+1351   7                    result_array[6]=1;
+1352   7                  }
+1353   6                  else
+1354   6                  {
+1355   7                    if (feature[1]<= 1.739)   
+1356   7                    {
+1357   8                      result_array[6]=4;
+1358   8                    }           
+1359   7                    else
+1360   7                    {
+1361   8                      result_array[6]=3;
+1362   8                    }             
+1363   7                  }
+1364   6                }
+1365   5              }
+1366   4              else
+1367   4              {
+1368   5                if (feature[28]<= -13.533)
+1369   5                {
+1370   6                  if (feature[28]<= -13.533)
+1371   6                  {
+1372   7                    result_array[6]=3;
+1373   7                  }
+1374   6                  else
+1375   6                  {
+1376   7                    result_array[6]=2;
+1377   7                  }
+1378   6                }
+1379   5                else
+1380   5                {
+1381   6                  result_array[6]=2;
+1382   6                }
+1383   5              }
+1384   4              // tree7
+1385   4              if (feature[29]<= 24.498)
+1386   4              {
+1387   5                if (feature[9]<= 0.165)
+1388   5                {
+1389   6                  if (feature[12]<= 0.739)
+1390   6                  {
+1391   7                    result_array[7]=0;
+1392   7                  }
+1393   6                  else
+1394   6                  {
+1395   7                    result_array[7]=1;
+1396   7                  }
+1397   6                }
+1398   5                else
+1399   5                {           
+1400   6                  result_array[7]=4;                  
+1401   6                }
+1402   5              }
+1403   4              else
+1404   4              {
+1405   5                if (feature[7]<= 3.952)
+1406   5                {
+1407   6                  result_array[7]=2;
+1408   6                }
+1409   5                else
+1410   5                {
+1411   6                  result_array[7]=3;
+1412   6                }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 24  
+
+1413   5              }
+1414   4              // tree8
+1415   4              if (feature[24]<= 3.941)
+1416   4              {
+1417   5                if (feature[16]<= 0.167)
+1418   5                {
+1419   6                  result_array[8]=0;          
+1420   6                }
+1421   5                else
+1422   5                {           
+1423   6                  if (feature[17]<= 2.15)
+1424   6                  {
+1425   7                    result_array[8]=1;
+1426   7                  }
+1427   6                  else
+1428   6                  {
+1429   7                    if (feature[7]<= 4.509)
+1430   7                    {
+1431   8                      result_array[8]=4;
+1432   8                    }
+1433   7                    else
+1434   7                    {
+1435   8                      result_array[8]=3;
+1436   8                    }
+1437   7                  }             
+1438   6                }
+1439   5              }
+1440   4              else
+1441   4              {
+1442   5                if (feature[28]<= -12.827)
+1443   5                {
+1444   6                  if (feature[8]<= -3.104)
+1445   6                  {
+1446   7                    result_array[8]=3;
+1447   7                  }
+1448   6                  else
+1449   6                  {
+1450   7                    result_array[8]=2;
+1451   7                  }
+1452   6                }
+1453   5                else
+1454   5                {
+1455   6                  if (feature[9]<= 0.608)
+1456   6                  {
+1457   7                    result_array[8]=4;
+1458   7                  }
+1459   6                  else
+1460   6                  {
+1461   7                    result_array[8]=2;
+1462   7                  }
+1463   6                }
+1464   5              }
+1465   4              // tree9
+1466   4              if (feature[14]<= 1.268)
+1467   4              {
+1468   5                if (feature[12]<= 0.152)
+1469   5                {
+1470   6                  result_array[9]=0;          
+1471   6                }
+1472   5                else
+1473   5                {           
+1474   6                  if (feature[2]<= 0.964)
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 25  
+
+1475   6                  {
+1476   7                    result_array[9]=1;
+1477   7                  }
+1478   6                  else
+1479   6                  {
+1480   7                    if (feature[8]<= -3.568)
+1481   7                    {
+1482   8                      result_array[9]=3;
+1483   8                    }
+1484   7                    else
+1485   7                    {
+1486   8                      result_array[9]=4;
+1487   8                    }
+1488   7                  }             
+1489   6                }
+1490   5              }
+1491   4              else
+1492   4              {
+1493   5                if (feature[26]<= 10.19)
+1494   5                {
+1495   6                  result_array[9]=2;
+1496   6                }
+1497   5                else
+1498   5                {
+1499   6                  result_array[9]=3;
+1500   6                }
+1501   5              }
+1502   4              for (i=0;i<10;i++)
+1503   4              {
+1504   5                if(result_array[i]==0)
+1505   5                {
+1506   6                  decide_array[0]+=1;
+1507   6                }
+1508   5                else if(result_array[i]==1)
+1509   5                {
+1510   6                  decide_array[1]+=1;
+1511   6                }
+1512   5                else if(result_array[i]==2)
+1513   5                {
+1514   6                  decide_array[2]+=1;
+1515   6                }
+1516   5                else if(result_array[i]==3)
+1517   5                {
+1518   6                  decide_array[3]+=1;
+1519   6                }
+1520   5                else if(result_array[i]==4)
+1521   5                {
+1522   6                  decide_array[4]+=1;
+1523   6                }
+1524   5              }
+1525   4              temp = decide_array[0];
+1526   4              index = 0;
+1527   4              for(i =0;i<5;i++)
+1528   4              {
+1529   5                if(decide_array[i]>temp)
+1530   5                {
+1531   6                  temp = decide_array[i];
+1532   6                  index = i;
+1533   6                }
+1534   5              }
+1535   4              
+1536   4              if(index==0)
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 26  
+
+1537   4              {
+1538   5                result[index]+=1;
+1539   5                if(result[index]>9)
+1540   5                {
+1541   6                  result_two[index]+=1;
+1542   6                  result[index]-=10;
+1543   6                }
+1544   5              }
+1545   4              if(index==1)
+1546   4              {
+1547   5                result[index]+=2;
+1548   5                if(result[index]>9)
+1549   5                {
+1550   6                  result_two[index]+=1;
+1551   6                  result[index]-=10;
+1552   6                }
+1553   5              }
+1554   4              if(index==2)
+1555   4              {
+1556   5                result[index]+=3;
+1557   5                if(result[index]>9)
+1558   5                {
+1559   6                  result_two[index]+=1;
+1560   6                  result[index]-=10;
+1561   6                }
+1562   5              }
+1563   4              if(index==3)
+1564   4              {
+1565   5                result[index]+=6;
+1566   5                if(result[index]>9)
+1567   5                {
+1568   6                  result_two[index]+=1;
+1569   6                  result[index]-=10;
+1570   6                }
+1571   5              }
+1572   4              if(index==4)
+1573   4              {
+1574   5                result[index]+=2;
+1575   5                if(result[index]>9)
+1576   5                {
+1577   6                  result_two[index]+=1;
+1578   6                  result[index]-=10;
+1579   6                }
+1580   5              }
+1581   4              // 显示
+1582   4      
+1583   4              DisplayOneChar(3,0,result_two[0]+0x30);
+1584   4              DisplayOneChar(4,0,result[0]+0x30);
+1585   4              DisplayOneChar(8,0,result_two[0]+0x30);
+1586   4              DisplayOneChar(9,0,result[1]+0x30);
+1587   4              DisplayOneChar(13,0,result_two[2]+0x30);
+1588   4              DisplayOneChar(14,0,result[2]+0x30);
+1589   4              DisplayOneChar(3,1,result_two[3]+0x30);
+1590   4              DisplayOneChar(4,1,result[3]+0x30);
+1591   4              DisplayOneChar(8,1,result_two[4]+0x30);
+1592   4              DisplayOneChar(9,1,result[4]+0x30);
+1593   4              led1=1;
+1594   4              led2=1;
+1595   4              delay_ms(1000); 
+1596   4          }
+1597   3        }
+1598   2      
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2020 15:24:23 PAGE 27  
+
+1599   2        }  
+1600   1      }
+1601                  
+1602          
+1603              
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =  14128    ----
+   CONSTANT SIZE    =    256    ----
+   XDATA SIZE       =   2599     948
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

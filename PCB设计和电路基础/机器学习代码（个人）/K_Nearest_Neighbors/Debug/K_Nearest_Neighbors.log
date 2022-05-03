@@ -1,0 +1,10 @@
+﻿  KNN_classification.c
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(60): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(158): warning C4101: “temp_class”: 未引用的局部变量
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(177): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(180): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(211): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(213): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(310): warning C4047: “=”:“int *”与“int **”的间接级别不同
+c:\users\jx_g\desktop\python_to_c\c_implement\k_nearest_neighbors\knn_classification.c(311): warning C4047: “=”:“int *”与“int **”的间接级别不同
+  K_Nearest_Neighbors.vcxproj -> C:\Users\jx_G\Desktop\python_to_c\C_implement\K_Nearest_Neighbors\Debug\K_Nearest_Neighbors.exe

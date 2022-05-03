@@ -1,0 +1,122 @@
+2021-06-06 17:18:19,212 fastmvsnet INFO: Using CPU
+2021-06-06 17:18:19,212 fastmvsnet INFO: Namespace(config_file='../configs/dtu.yaml', cpu=True, opts=[])
+2021-06-06 17:18:19,212 fastmvsnet INFO: Loaded configuration file ../configs/dtu.yaml
+2021-06-06 17:18:19,213 fastmvsnet INFO: Running with config:
+AUTO_RESUME: True
+DATA:
+  NUM_WORKERS: 16
+  TEST:
+    IMG_HEIGHT: 960
+    IMG_WIDTH: 1280
+    INTER_SCALE: 2.13
+    NUM_VIEW: 5
+    NUM_VIRTUAL_PLANE: 96
+    ROOT_DIR: ../data/dtu
+  TRAIN:
+    INTER_SCALE: 4.24
+    NUM_VIEW: 3
+    NUM_VIRTUAL_PLANE: 48
+    ROOT_DIR: ../data/dtu
+  VAL:
+    NUM_VIEW: 3
+    ROOT_DIR: ../data/dtu
+MODEL:
+  EDGE_CHANNELS: (32, 32, 64)
+  FLOW_CHANNELS: (64, 64, 16, 1)
+  IMG_BASE_CHANNELS: 8
+  NUM_VIRTUAL_PLANE: 48
+  TEST:
+    IMG_SCALES: (0.25, 0.5)
+    INTER_SCALES: (0.75, 0.15)
+  TRAIN:
+    IMG_SCALES: (0.25, 0.5)
+    INTER_SCALES: (0.75, 0.375)
+  VAL:
+    IMG_SCALES: (0.125, 0.25)
+    INTER_SCALES: (0.75, 0.375)
+  VALID_THRESHOLD: 8.0
+  VOL_BASE_CHANNELS: 8
+  WEIGHT: 
+OUTPUT_DIR: @
+RNG_SEED: 1
+SCHEDULER:
+  INIT_EPOCH: 4
+  MAX_EPOCH: 16
+  MultiStepLR:
+    gamma: 0.1
+    milestones: ()
+  StepLR:
+    gamma: 0.9
+    step_size: 2
+  TYPE: StepLR
+SOLVER:
+  BASE_LR: 0.0005
+  RMSprop:
+    alpha: 0.9
+  SGD:
+    momentum: 0.9
+  TYPE: RMSprop
+  WEIGHT_DECAY: 0.001
+TEST:
+  AUGMENTATION: ()
+  BATCH_SIZE: 1
+  LOG_PERIOD: 10
+  WEIGHT: ../outputs/pretrained.pth
+TRAIN:
+  AUGMENTATION: ()
+  BATCH_SIZE: 16
+  CHECKPOINT_PERIOD: 1
+  FROZEN_PATTERNS: ()
+  LOG_PERIOD: 10
+  VAL_METRIC: <1_cor
+  VAL_PERIOD: 0
+2021-06-06 17:18:19,235 fastmvsnet.utils.checkpoint INFO: Loading checkpoint from ../outputs/pretrained.pth
+2021-06-06 17:18:40,661 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_001_3_r5000.png finished.time: 21.3554 (21.3554)  data: 4.1286 (4.1286)
+2021-06-06 17:18:54,829 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_002_3_r5000.png finished.time: 17.7621 (17.7621)  data: 2.4712 (2.4712)
+2021-06-06 17:19:09,378 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_003_3_r5000.png finished.time: 16.6908 (16.6908)  data: 1.9930 (1.9930)
+2021-06-06 17:19:23,699 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_004_3_r5000.png finished.time: 16.0983 (16.0983)  data: 1.7125 (1.7125)
+2021-06-06 17:19:37,096 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_005_3_r5000.png finished.time: 15.5582 (15.5582)  data: 1.5371 (1.5371)
+2021-06-06 17:19:52,155 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_006_3_r5000.png finished.time: 15.4749 (15.4749)  data: 1.4300 (1.4300)
+2021-06-06 17:20:05,101 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_007_3_r5000.png finished.time: 15.1137 (15.1137)  data: 1.3428 (1.3428)
+2021-06-06 17:20:18,347 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_008_3_r5000.png finished.time: 14.8802 (14.8802)  data: 1.2790 (1.2790)
+2021-06-06 17:20:31,022 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_009_3_r5000.png finished.time: 14.6352 (14.6352)  data: 1.2322 (1.2322)
+2021-06-06 17:20:42,608 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_010_3_r5000.png finished.time: 14.3303 (14.3303)  data: 1.1969 (1.1969)
+2021-06-06 17:20:54,696 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_011_3_r5000.png finished.time: 14.1265 (14.1265)  data: 1.1607 (1.1607)
+2021-06-06 17:21:07,066 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_012_3_r5000.png finished.time: 13.9801 (13.9801)  data: 1.1345 (1.1345)
+2021-06-06 17:21:20,190 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_013_3_r5000.png finished.time: 13.9142 (13.9142)  data: 1.1085 (1.1085)
+2021-06-06 17:21:32,149 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_014_3_r5000.png finished.time: 13.7745 (13.7745)  data: 1.0869 (1.0869)
+2021-06-06 17:21:43,347 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_015_3_r5000.png finished.time: 13.6028 (13.6028)  data: 1.0679 (1.0679)
+2021-06-06 17:21:55,358 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_016_3_r5000.png finished.time: 13.5033 (13.5033)  data: 1.0504 (1.0504)
+2021-06-06 17:22:07,823 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_017_3_r5000.png finished.time: 13.4422 (13.4422)  data: 1.0358 (1.0358)
+2021-06-06 17:22:19,342 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_018_3_r5000.png finished.time: 13.3353 (13.3353)  data: 1.0246 (1.0246)
+2021-06-06 17:22:31,388 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_019_3_r5000.png finished.time: 13.2675 (13.2675)  data: 1.0121 (1.0121)
+2021-06-06 17:22:43,249 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_020_3_r5000.png finished.time: 13.1972 (13.1972)  data: 1.0016 (1.0016)
+2021-06-06 17:22:54,588 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_021_3_r5000.png finished.time: 12.6963 (13.1087)  data: 0.8377 (0.9944)
+2021-06-06 17:23:07,443 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_022_3_r5000.png finished.time: 12.6307 (13.0972)  data: 0.8365 (0.9851)
+2021-06-06 17:23:18,259 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_023_3_r5000.png finished.time: 12.4441 (12.9980)  data: 0.8250 (0.9773)
+2021-06-06 17:23:29,011 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_024_3_r5000.png finished.time: 12.2656 (12.9044)  data: 0.8216 (0.9701)
+2021-06-06 17:23:39,864 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_025_3_r5000.png finished.time: 12.1384 (12.8223)  data: 0.8239 (0.9666)
+2021-06-06 17:23:50,926 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_026_3_r5000.png finished.time: 11.9386 (12.7547)  data: 0.8179 (0.9591)
+2021-06-06 17:24:01,699 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_027_3_r5000.png finished.time: 11.8299 (12.6813)  data: 0.8167 (0.9531)
+2021-06-06 17:24:12,553 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_028_3_r5000.png finished.time: 11.7103 (12.6160)  data: 0.8134 (0.9465)
+2021-06-06 17:24:23,407 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_029_3_r5000.png finished.time: 11.6192 (12.5552)  data: 0.8092 (0.9405)
+2021-06-06 17:24:34,123 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_030_3_r5000.png finished.time: 11.5758 (12.4939)  data: 0.8046 (0.9354)
+2021-06-06 17:24:44,764 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_031_3_r5000.png finished.time: 11.5034 (12.4342)  data: 0.8037 (0.9304)
+2021-06-06 17:24:55,470 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_032_3_r5000.png finished.time: 11.4202 (12.3802)  data: 0.8005 (0.9257)
+2021-06-06 17:25:06,301 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_033_3_r5000.png finished.time: 11.3055 (12.3332)  data: 0.8004 (0.9218)
+2021-06-06 17:25:16,910 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_034_3_r5000.png finished.time: 11.2380 (12.2825)  data: 0.7987 (0.9174)
+2021-06-06 17:25:27,451 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_035_3_r5000.png finished.time: 11.2052 (12.2327)  data: 0.7978 (0.9136)
+2021-06-06 17:25:38,436 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_036_3_r5000.png finished.time: 11.1539 (12.1981)  data: 0.7972 (0.9097)
+2021-06-06 17:25:49,377 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_037_3_r5000.png finished.time: 11.0777 (12.1641)  data: 0.7982 (0.9074)
+2021-06-06 17:26:00,455 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_038_3_r5000.png finished.time: 11.0557 (12.1355)  data: 0.7956 (0.9041)
+2021-06-06 17:26:12,451 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_039_3_r5000.png finished.time: 11.0531 (12.1319)  data: 0.7970 (0.9018)
+2021-06-06 17:26:23,314 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_040_3_r5000.png finished.time: 11.0032 (12.1002)  data: 0.7997 (0.9006)
+2021-06-06 17:26:35,132 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_041_3_r5000.png finished.time: 11.0272 (12.0933)  data: 0.8085 (0.9037)
+2021-06-06 17:26:46,374 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_042_3_r5000.png finished.time: 10.9465 (12.0731)  data: 0.8116 (0.9025)
+2021-06-06 17:26:58,017 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_043_3_r5000.png finished.time: 10.9879 (12.0631)  data: 0.8124 (0.9006)
+2021-06-06 17:27:09,336 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_044_3_r5000.png finished.time: 11.0163 (12.0461)  data: 0.8144 (0.8993)
+2021-06-06 17:27:21,214 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_045_3_r5000.png finished.time: 11.0675 (12.0424)  data: 0.8184 (0.9007)
+2021-06-06 17:27:32,071 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_046_3_r5000.png finished.time: 11.0572 (12.0167)  data: 0.8219 (0.8995)
+2021-06-06 17:27:43,438 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_047_3_r5000.png finished.time: 11.0869 (12.0028)  data: 0.8224 (0.8975)
+2021-06-06 17:27:55,604 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_048_3_r5000.png finished.time: 11.1526 (12.0062)  data: 0.8238 (0.8954)
+2021-06-06 17:28:06,765 fastmvsnet.train INFO: ../data/dtu/Eval/Rectified/scan1/rect_049_3_r5000.png finished.time: 11.1679 (11.9890)  data: 0.8251 (0.8934)
