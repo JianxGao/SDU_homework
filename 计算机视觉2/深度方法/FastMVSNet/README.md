@@ -64,13 +64,18 @@ tools文件夹中存放功能函数
 
 ​		在转换时，相机参数被生成，这些参数分别存放在pair.txt和cam_0000000x.txt文件中。
 
-8. 路径修改和文件存放。首先，在FastMVSNet的配置文件dtu.yaml中修改TEST下data的路径为scan5的路径，之后在dataset.py中找到"DTU_test"类中"_load_dataset"函数，查看图片和相机参数文件所在的路径。我们将所有输入文件进行如下包装：图片放入文件夹images中，相机参数中，pair.txt放在scan5下，其余参数放在和scan5同级的Camera文件夹下。（这一步也可自定义）
+8. 路径修改和文件存放。首先，在FastMVSNet的配置文件dtu.yaml中修改TEST下data的路径为scan5的路径，之后在dataset.py中找到"DTU_test"类中"_load_dataset"函数，查看图片和相机参数文件所在的路径（根据dataset.py的默认设置，假设我们将光照强度默认为0，那么把所有自采图片重命名为rect_0xx_0_r5000.jpg）。我们将所有输入文件进行如下包装：图片放入文件夹images中，相机参数中，pair.txt放在scan5下，其余参数放在和scan5同级的Camera文件夹下。（这一步也可自定义）
 
 9. 通过test.py在自采数据上完成测试。生成的pfm文件就是深度图，可以用MVSNet中的visualize.py访问：
 
    ```shell
     python visualize.py ../dtu/scan3/00000009_init.pfm
    ```
+神经网络输出的结果如下：
+
+![8](./8.png)
+
+FastMVSNet推理每张图片大约需要30秒。
 
 10. 按照MVSNet代码库的做法，由深度图通过depthfusion.py生成点云。（这一步之前要编译安装opencv和fusibile两个代码库。）
 
