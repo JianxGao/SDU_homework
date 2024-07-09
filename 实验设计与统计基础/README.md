@@ -18,5 +18,5 @@
 Here is a detailed description about the project in Chinese.
 https://zhuanlan.zhihu.com/p/157661166
 
-### **If you have any doubt about the project, you can contact me by email：201800620686@mail.sdu.edu.cn**.
+
 
